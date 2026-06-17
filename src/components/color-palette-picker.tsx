@@ -28,7 +28,7 @@ export function ColorPalettePicker({
             title={color.name}
             className={`aspect-square min-h-10 border-2 border-[#1A1A1A] transition focus:outline-none focus:ring-4 focus:ring-[#6FB6FF] disabled:cursor-not-allowed ${
               selected
-                ? "scale-105 shadow-[3px_3px_0_#1A1A1A] ring-4 ring-[#FFD91A]"
+                ? "scale-105 shadow-[3px_3px_0_#1A1A1A] ring-4 ring-[#6FB6FF]"
                 : "hover:-translate-y-0.5 hover:shadow-[3px_3px_0_#1A1A1A]"
             }`}
             style={{ backgroundColor: color.hex }}
