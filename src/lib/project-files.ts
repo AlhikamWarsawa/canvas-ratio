@@ -3,6 +3,7 @@ import type { ProjectRecord } from "@/types/canvas";
 
 export const PROJECT_FILES_STORAGE_KEY = "canvas-ratio:project-files:v1";
 export const PROJECT_FILE_FALLBACK_COLOR = "#EFEDE4";
+export const PROJECT_FILE_COMPLETED_COLOR = "#1E8A4A";
 
 export type ProjectFileBlock = {
   index: number;
@@ -172,6 +173,14 @@ export function toggleProjectFileBlock(
   projectFile: ProjectFile,
   blockIndex: number,
 ): ProjectFile {
+  const targetBlock = projectFile.blocks.find(
+    (block) => block.index === blockIndex,
+  );
+
+  if (!targetBlock || targetBlock.completed) {
+    return projectFile;
+  }
+
   const currentDate = getTodayDateKey();
 
   return {
@@ -181,12 +190,10 @@ export function toggleProjectFileBlock(
         return block;
       }
 
-      const completed = !block.completed;
-
       return {
         ...block,
-        completed,
-        completedAt: completed ? currentDate : undefined,
+        completed: true,
+        completedAt: currentDate,
       };
     }),
     updatedAt: new Date().toISOString(),
@@ -353,7 +360,7 @@ export function buildProjectFileHtml(
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>${escapeHtml(projectFile.projectName)} - Canvas Ratio Project File</title>
   <style>
-    :root { --ink: #1a1a1a; --paper: #fbfbf7; --sun: #ffd91a; --sky: #6fb6ff; --project: ${escapeHtml(linkedProject.color)}; }
+    :root { --ink: #1a1a1a; --paper: #fbfbf7; --sun: #ffd91a; --sky: #6fb6ff; --project: ${escapeHtml(linkedProject.color)}; --completed: ${PROJECT_FILE_COMPLETED_COLOR}; }
     * { box-sizing: border-box; }
     body { margin: 0; color: var(--ink); font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--paper); }
     main { width: min(1100px, 100%); margin: 0 auto; padding: 24px; }
@@ -365,7 +372,7 @@ export function buildProjectFileHtml(
     .block { aspect-ratio: 1; border: 2px solid var(--ink); background: white; display: block; }
     .badge { display: inline-flex; align-items: center; gap: 8px; border: 2px solid var(--ink); background: white; padding: 6px 10px; font-weight: 900; }
     .badge::before { width: 12px; height: 12px; border: 2px solid var(--ink); border-radius: 999px; background: var(--project); content: ""; }
-    .block.completed { background: var(--project); }
+    .block.completed { background: var(--completed); }
     .block.today:not(.completed) { background: var(--sun); box-shadow: inset 0 0 0 3px white; }
     pre { white-space: pre-wrap; overflow-wrap: anywhere; }
   </style>

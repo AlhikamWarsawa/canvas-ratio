@@ -4,23 +4,24 @@ import type {
   ProjectFile,
   ProjectFileProgress,
 } from "@/lib/project-files";
-import { getReadableTextColor } from "@/lib/project-files";
+import {
+  PROJECT_FILE_COMPLETED_COLOR,
+  getReadableTextColor,
+} from "@/lib/project-files";
 
 type ProjectFileBlockGridProps = {
   projectFile: ProjectFile;
   progress: ProjectFileProgress;
-  projectColor: string;
   onToggleBlock: (blockIndex: number) => void;
 };
 
 export function ProjectFileBlockGrid({
   projectFile,
   progress,
-  projectColor,
   onToggleBlock,
 }: ProjectFileBlockGridProps) {
   const recommendedToday = new Set(progress.todayRecommendedBlockIndexes);
-  const completedTextColor = getReadableTextColor(projectColor);
+  const completedTextColor = getReadableTextColor(PROJECT_FILE_COMPLETED_COLOR);
 
   return (
     <section className="rounded-lg border-2 border-[#1A1A1A] bg-white p-4 shadow-[4px_4px_0_#1A1A1A]">
@@ -55,12 +56,17 @@ export function ProjectFileBlockGrid({
               aria-label={`${projectFile.unitName} ${block.index + 1}, ${
                 block.completed ? "completed" : "incomplete"
               }`}
-              title={`${projectFile.unitName} ${block.index + 1}`}
+              title={
+                block.completed
+                  ? `${projectFile.unitName} ${block.index + 1} completed`
+                  : `${projectFile.unitName} ${block.index + 1}`
+              }
+              disabled={block.completed}
               onClick={() => onToggleBlock(block.index)}
-              className="aspect-square min-h-9 border-2 border-[#1A1A1A] text-[10px] font-black leading-none transition hover:-translate-y-0.5 hover:shadow-[3px_3px_0_#1A1A1A] focus:outline-none focus:ring-4 focus:ring-[#6FB6FF]"
+              className="aspect-square min-h-9 border-2 border-[#1A1A1A] text-[10px] font-black leading-none transition hover:-translate-y-0.5 hover:shadow-[3px_3px_0_#1A1A1A] focus:outline-none focus:ring-4 focus:ring-[#6FB6FF] disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none"
               style={{
                 backgroundColor: block.completed
-                  ? projectColor
+                  ? PROJECT_FILE_COMPLETED_COLOR
                   : recommended
                     ? "#FFD91A"
                     : "#FFFFFF",
@@ -74,7 +80,7 @@ export function ProjectFileBlockGrid({
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2 text-xs font-black">
-        <LegendChip color={projectColor} label="Completed" />
+        <LegendChip color={PROJECT_FILE_COMPLETED_COLOR} label="Completed" />
         <LegendChip color="#FFD91A" label="Recommended today" />
         <LegendChip color="#FFFFFF" label="Remaining" />
       </div>

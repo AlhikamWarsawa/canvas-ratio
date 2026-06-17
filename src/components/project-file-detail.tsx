@@ -88,7 +88,13 @@ export function ProjectFileDetail({
       return;
     }
 
-    onUpdateProjectFile(toggleProjectFileBlock(projectFile, blockIndex));
+    const nextProjectFile = toggleProjectFileBlock(projectFile, blockIndex);
+
+    if (nextProjectFile === projectFile) {
+      return;
+    }
+
+    onUpdateProjectFile(nextProjectFile);
   }
 
   function handleSavePlanning(event: FormEvent<HTMLFormElement>) {
@@ -228,7 +234,6 @@ export function ProjectFileDetail({
       <ProjectFileBlockGrid
         projectFile={projectFile}
         progress={progress}
-        projectColor={linkedProject.color}
         onToggleBlock={handleToggleBlock}
       />
 

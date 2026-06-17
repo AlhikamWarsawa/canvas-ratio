@@ -156,7 +156,7 @@ export function ProjectRatioForm({
           type="button"
           disabled={disabled}
           onClick={addProject}
-          className="min-h-10 border-2 border-[#1A1A1A] bg-white px-3 py-2 text-sm font-black text-[#2F5FBF] shadow-[3px_3px_0_#1A1A1A] disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-[#4a4a4a] disabled:shadow-none"
+          className="min-h-10 border-2 border-[#1A1A1A] bg-[#FFD91A] px-3 py-2 text-sm font-black shadow-[3px_3px_0_#1A1A1A] disabled:cursor-not-allowed disabled:bg-gray-200 disabled:shadow-none"
         >
           Add Project
         </button>
@@ -164,7 +164,7 @@ export function ProjectRatioForm({
           type="submit"
           disabled={disabled}
           data-testid="save-project-ratios"
-          className="min-h-10 border-2 border-[#1A1A1A] bg-[#2F5FBF] px-3 py-2 text-sm font-black text-white shadow-[3px_3px_0_#1A1A1A] disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-[#4a4a4a] disabled:shadow-none"
+          className="min-h-10 border-2 border-[#1A1A1A] bg-[#2F5FBF] px-3 py-2 text-sm font-black text-white shadow-[3px_3px_0_#FFD91A] disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-[#4a4a4a] disabled:shadow-none"
         >
           Save Projects
         </button>
@@ -253,7 +253,7 @@ export function ProjectRatioForm({
                         aria-label={`${project.name} color ${color.name}`}
                         className={`aspect-square min-h-8 border-2 border-[#1A1A1A] focus:outline-none focus:ring-4 focus:ring-[#6FB6FF] disabled:cursor-not-allowed ${
                           selected
-                            ? "shadow-[3px_3px_0_#1A1A1A] ring-4 ring-[#6FB6FF]"
+                            ? "shadow-[3px_3px_0_#1A1A1A] ring-4 ring-[#FFD91A]"
                             : ""
                         }`}
                         style={{ backgroundColor: color.hex }}
