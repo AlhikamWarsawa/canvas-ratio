@@ -4,6 +4,7 @@ import { useState, type ChangeEvent } from "react";
 import { InlineMessage } from "@/components/inline-message";
 import {
   calculateProjectFileProgress,
+  formatProjectFileRequirement,
   getReadableTextColor,
   resolveProjectFileProject,
   type ProjectFile,
@@ -139,7 +140,10 @@ export function ProjectFileList({
                 <p>
                   Required today:{" "}
                   <span className="font-black">
-                    {progress.requiredToday} {projectFile.unitName}
+                    {formatProjectFileRequirement(
+                      progress.requiredToday,
+                      projectFile.unitName,
+                    )}
                   </span>
                 </p>
                 <p>

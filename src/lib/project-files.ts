@@ -223,15 +223,20 @@ export function calculateProjectFileProgress(
   );
   const targetDatePassed = daysDifference < 0;
   const daysLeftInclusive = targetDatePassed ? 1 : Math.max(1, daysDifference + 1);
-  const todayTargetBase =
+  const rawTodayTargetBase =
     remainingAtStartOfToday === 0
       ? 0
-      : Math.ceil(remainingAtStartOfToday / daysLeftInclusive);
+      : remainingAtStartOfToday / daysLeftInclusive;
+  const todayTargetBase =
+    rawTodayTargetBase > 0 && rawTodayTargetBase < 1
+      ? rawTodayTargetBase
+      : Math.ceil(rawTodayTargetBase);
   const requiredToday =
     remaining === 0 ? 0 : Math.max(0, todayTargetBase - completedToday);
+  const recommendedBlockCount = requiredToday > 0 ? Math.ceil(requiredToday) : 0;
   const todayRecommendedBlockIndexes = projectFile.blocks
     .filter((block) => !block.completed)
-    .slice(0, requiredToday)
+    .slice(0, recommendedBlockCount)
     .map((block) => block.index);
 
   return {
@@ -251,6 +256,23 @@ export function calculateProjectFileProgress(
     completedToday,
     todayRecommendedBlockIndexes,
   };
+}
+
+export function formatProjectFileRequirement(
+  value: number,
+  unitName?: string,
+): string {
+  if (isPartialProjectFileRequirement(value)) {
+    return `${formatProjectFileRequirementNumber(value * 100)}%`;
+  }
+
+  const amount = formatProjectFileRequirementNumber(value);
+
+  return unitName ? `${amount} ${unitName}` : amount;
+}
+
+export function isPartialProjectFileRequirement(value: number): boolean {
+  return value > 0 && value < 1;
 }
 
 export function buildProjectFileReviewData(
@@ -386,7 +408,7 @@ export function buildProjectFileHtml(
       <p>${escapeHtml(projectFile.notes ?? "")}</p>
       <div class="summary">
         <div class="metric">Progress: ${progress.percentComplete}%</div>
-        <div class="metric">Required today: ${progress.requiredToday} ${escapeHtml(projectFile.unitName)}</div>
+        <div class="metric">Required today: ${escapeHtml(formatProjectFileRequirement(progress.requiredToday, projectFile.unitName))}</div>
         <div class="metric">Completed today: ${progress.completedToday}</div>
         <div class="metric">Remaining: ${progress.remaining}</div>
         <div class="metric">Days left: ${progress.daysLeftInclusive}</div>
@@ -599,6 +621,18 @@ function getProjectFileLinkLabel(linkedProject: ProjectFileProjectLink): string 
   return linkedProject.snapshotName
     ? `Unlinked project / previous: ${linkedProject.snapshotName}`
     : "Unlinked project";
+}
+
+function formatProjectFileRequirementNumber(value: number): string {
+  if (!Number.isFinite(value)) {
+    return "0";
+  }
+
+  const roundedValue = Math.round(value * 10) / 10;
+
+  return Number.isInteger(roundedValue)
+    ? String(roundedValue)
+    : roundedValue.toFixed(1);
 }
 
 function differenceInCalendarDays(targetDate: string, todayDate: string): number {

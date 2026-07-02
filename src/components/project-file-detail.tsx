@@ -7,6 +7,8 @@ import { ProjectFileReviewButton } from "@/components/project-file-review-button
 import {
   buildProjectFileHtml,
   calculateProjectFileProgress,
+  formatProjectFileRequirement,
+  isPartialProjectFileRequirement,
   getReadableTextColor,
   resolveProjectFileProject,
   toggleProjectFileBlock,
@@ -125,6 +127,7 @@ export function ProjectFileDetail({
   }
 
   const linkedTextColor = getReadableTextColor(linkedProject.color);
+  const requiredTodayValue = formatProjectFileRequirement(progress.requiredToday);
 
   return (
     <div className="grid min-w-0 gap-4">
@@ -181,11 +184,11 @@ export function ProjectFileDetail({
         <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
           <MetricCard
             label="Required today"
-            value={String(progress.requiredToday)}
+            value={formatProjectFileRequirement(progress.requiredToday)}
             detail={
               progress.remaining === 0
                 ? "Completed."
-                : `Target ${progress.todayTargetBase}`
+                : `Target ${formatProjectFileRequirement(progress.todayTargetBase)}`
             }
           />
           <MetricCard
@@ -221,8 +224,11 @@ export function ProjectFileDetail({
           </InlineMessage>
         ) : progress.requiredToday > 0 ? (
           <InlineMessage type="info" className="mt-4">
-            Do {progress.requiredToday} more {projectFile.unitName} today to
-            match this plan.
+            Do{" "}
+            {isPartialProjectFileRequirement(progress.requiredToday)
+              ? requiredTodayValue
+              : `${requiredTodayValue} more ${projectFile.unitName}`}{" "}
+            today to match this plan.
           </InlineMessage>
         ) : (
           <InlineMessage type="info" className="mt-4">

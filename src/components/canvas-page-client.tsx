@@ -45,7 +45,7 @@ type CanvasPageClientProps = {
 };
 
 type DrawerTab = "dump" | "projects" | "paint" | "black" | "review";
-type MobileTab = "canvas" | "dump" | "paint" | "review";
+type MobileTab = "canvas" | "dump" | "projects" | "paint" | "review";
 
 const drawerTabs: { id: DrawerTab; label: string }[] = [
   { id: "dump", label: "Dump" },
@@ -58,6 +58,7 @@ const drawerTabs: { id: DrawerTab; label: string }[] = [
 const mobileTabs: { id: MobileTab; label: string }[] = [
   { id: "canvas", label: "Canvas" },
   { id: "dump", label: "Dump" },
+  { id: "projects", label: "Projects" },
   { id: "paint", label: "Paint" },
   { id: "review", label: "Review" },
 ];
@@ -128,13 +129,13 @@ export function CanvasPageClient({ initialDateKey }: CanvasPageClientProps) {
     ? activeDrawerTab
     : activeMobileTab === "dump"
       ? "dump"
-      : activeMobileTab === "paint"
-      ? activeDrawerTab === "projects"
+      : activeMobileTab === "projects"
         ? "projects"
-        : "paint"
-      : activeMobileTab === "review"
-        ? "review"
-        : activeDrawerTab;
+        : activeMobileTab === "paint"
+          ? "paint"
+          : activeMobileTab === "review"
+            ? "review"
+            : activeDrawerTab;
 
   useEffect(() => {
     setSelectedCellIndices([]);
@@ -181,7 +182,7 @@ export function CanvasPageClient({ initialDateKey }: CanvasPageClientProps) {
 
   function openProjectsPanel() {
     setActiveDrawerTab("projects");
-    setActiveMobileTab("paint");
+    setActiveMobileTab("projects");
   }
 
   function handleSaveProjects(nextProjects: ProjectRecord[]) {
@@ -731,7 +732,7 @@ export function CanvasPageClient({ initialDateKey }: CanvasPageClientProps) {
       </div>
 
       <nav
-        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t-2 border-[#1A1A1A] bg-white lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t-2 border-[#1A1A1A] bg-white lg:hidden"
         aria-label="Mobile canvas sections"
       >
         {mobileTabs.map((tab) => (
@@ -742,6 +743,9 @@ export function CanvasPageClient({ initialDateKey }: CanvasPageClientProps) {
             onClick={() => {
               if (tab.id === "paint") {
                 setActiveDrawerTab("paint");
+              }
+              if (tab.id === "projects") {
+                setActiveDrawerTab("projects");
               }
               setActiveMobileTab(tab.id);
             }}
@@ -943,7 +947,7 @@ function MobileTabButton({
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      className={`min-h-16 border-r-2 border-[#1A1A1A] px-2 py-2 text-sm font-black leading-tight focus:outline-none focus:ring-4 focus:ring-[#6FB6FF] last:border-r-0 ${
+      className={`min-h-16 border-r-2 border-[#1A1A1A] px-1 py-2 text-xs font-black leading-tight focus:outline-none focus:ring-4 focus:ring-[#6FB6FF] last:border-r-0 sm:px-2 sm:text-sm ${
         active ? "bg-[#FFD91A]" : "bg-white"
       }`}
     >
