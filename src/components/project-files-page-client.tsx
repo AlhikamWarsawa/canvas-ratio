@@ -14,6 +14,7 @@ import {
   parseProjectFileImport,
   upsertProjectFile,
   type ProjectFile,
+  type ProjectFileRecommendationMode,
 } from "@/lib/project-files";
 import {
   getActiveProjects,
@@ -38,6 +39,9 @@ export function ProjectFilesPageClient({
   const [settings, setSettings] = useState<CanvasSettings>(() =>
     getDefaultSettings(),
   );
+  const [recommendationModes, setRecommendationModes] = useState<
+    Record<string, ProjectFileRecommendationMode>
+  >({});
   const [message, setMessage] = useState("");
   const activeProjects = useMemo(
     () => getActiveProjects(settings.projects),
@@ -97,8 +101,23 @@ export function ProjectFilesPageClient({
 
     const nextFiles = deleteProjectFile(files, projectFileId);
     setFiles(nextFiles);
+    setRecommendationModes((currentModes) => {
+      const { [projectFileId]: _deletedMode, ...nextModes } = currentModes;
+
+      return nextModes;
+    });
     setSelectedFileId(nextFiles[0]?.id ?? "");
     setMessage("Project file deleted.");
+  }
+
+  function handleRecommendationModeChange(
+    projectFileId: string,
+    recommendationMode: ProjectFileRecommendationMode,
+  ) {
+    setRecommendationModes((currentModes) => ({
+      ...currentModes,
+      [projectFileId]: recommendationMode,
+    }));
   }
 
   async function handleImportProjectFile(file: File) {
@@ -158,8 +177,10 @@ export function ProjectFilesPageClient({
             projects={settings.projects}
             activeProjects={activeProjects}
             filterProjectId={filterProjectId}
+            recommendationModes={recommendationModes}
             onFilterProjectId={setFilterProjectId}
             onSelectProjectFile={setSelectedFileId}
+            onRecommendationModeChange={handleRecommendationModeChange}
             onImportProjectFile={handleImportProjectFile}
           />
 
@@ -179,6 +200,20 @@ export function ProjectFilesPageClient({
           <ProjectFileDetail
             projectFile={selectedFile}
             projects={settings.projects}
+            recommendationMode={
+              selectedFile
+                ? (recommendationModes[selectedFile.id] ?? "daily")
+                : "daily"
+            }
+            onRecommendationModeChange={
+              selectedFile
+                ? (recommendationMode) =>
+                    handleRecommendationModeChange(
+                      selectedFile.id,
+                      recommendationMode,
+                    )
+                : undefined
+            }
             onUpdateProjectFile={handleUpdateProjectFile}
             onDeleteProjectFile={handleDeleteProjectFile}
           />

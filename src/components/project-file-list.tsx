@@ -3,11 +3,14 @@
 import { useState, type ChangeEvent } from "react";
 import { InlineMessage } from "@/components/inline-message";
 import {
+  PROJECT_FILE_DAILY_RECOMMENDED_COLOR,
+  PROJECT_FILE_WEEKLY_RECOMMENDED_COLOR,
   calculateProjectFileProgress,
   formatProjectFileRequirement,
   getReadableTextColor,
   resolveProjectFileProject,
   type ProjectFile,
+  type ProjectFileRecommendationMode,
 } from "@/lib/project-files";
 import type { ProjectRecord } from "@/types/canvas";
 
@@ -18,8 +21,13 @@ type ProjectFileListProps = {
   projects: ProjectRecord[];
   activeProjects: ProjectRecord[];
   filterProjectId: string;
+  recommendationModes: Record<string, ProjectFileRecommendationMode>;
   onFilterProjectId: (projectId: string) => void;
   onSelectProjectFile: (projectFileId: string) => void;
+  onRecommendationModeChange: (
+    projectFileId: string,
+    recommendationMode: ProjectFileRecommendationMode,
+  ) => void;
   onImportProjectFile: (file: File) => Promise<void>;
 };
 
@@ -30,8 +38,10 @@ export function ProjectFileList({
   projects,
   activeProjects,
   filterProjectId,
+  recommendationModes,
   onFilterProjectId,
   onSelectProjectFile,
+  onRecommendationModeChange,
   onImportProjectFile,
 }: ProjectFileListProps) {
   return (
@@ -81,13 +91,24 @@ export function ProjectFileList({
           const linkedProject = resolveProjectFileProject(projectFile, projects);
           const selected = projectFile.id === selectedFileId;
           const textColor = getReadableTextColor(linkedProject.color);
+          const recommendationMode =
+            recommendationModes[projectFile.id] ?? "daily";
+          const requiredRecommendation =
+            recommendationMode === "weekly"
+              ? progress.requiredThisWeek
+              : progress.requiredToday;
+          const targetRecommendation =
+            recommendationMode === "weekly"
+              ? progress.weeklyTargetBase
+              : progress.todayTargetBase;
+          const completedRecommendation =
+            recommendationMode === "weekly"
+              ? progress.completedThisWeek
+              : progress.completedToday;
 
           return (
-            <button
+            <article
               key={projectFile.id}
-              type="button"
-              aria-pressed={selected}
-              onClick={() => onSelectProjectFile(projectFile.id)}
               className={`project-card min-w-0 border-2 border-[#1A1A1A] p-3 text-left focus:outline-none focus:ring-4 focus:ring-[#6FB6FF] ${
                 selected
                   ? "project-card--selected bg-[#FBFBF7]"
@@ -101,67 +122,139 @@ export function ProjectFileList({
                   : undefined,
               }}
             >
-              <div className="flex min-w-0 items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <h3 className="break-words text-base font-black">
-                    {projectFile.projectName}
-                  </h3>
-                  <LinkedProjectBadge
-                    name={linkedProject.name}
-                    color={linkedProject.color}
-                    textColor={textColor}
-                    archived={linkedProject.archived}
-                    snapshotName={linkedProject.snapshotName}
+              <button
+                type="button"
+                aria-pressed={selected}
+                onClick={() => onSelectProjectFile(projectFile.id)}
+                className="block w-full text-left focus:outline-none focus:ring-4 focus:ring-[#6FB6FF]"
+              >
+                <div className="flex min-w-0 items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h3 className="break-words text-base font-black">
+                      {projectFile.projectName}
+                    </h3>
+                    <LinkedProjectBadge
+                      name={linkedProject.name}
+                      color={linkedProject.color}
+                      textColor={textColor}
+                      archived={linkedProject.archived}
+                      snapshotName={linkedProject.snapshotName}
+                    />
+                  </div>
+                  <span className="shrink-0 border-2 border-[#1A1A1A] bg-[#FFD91A] px-2 py-1 text-xs font-black">
+                    {progress.percentComplete}%
+                  </span>
+                </div>
+
+                <div className="mt-3 h-3 border-2 border-[#1A1A1A] bg-[#FBFBF7]">
+                  <div
+                    className="h-full transition-[width]"
+                    style={{
+                      width: `${progress.percentComplete}%`,
+                      backgroundColor: linkedProject.color,
+                    }}
+                    aria-hidden="true"
                   />
                 </div>
-                <span className="shrink-0 border-2 border-[#1A1A1A] bg-[#FFD91A] px-2 py-1 text-xs font-black">
-                  {progress.percentComplete}%
-                </span>
-              </div>
 
-              <div className="mt-3 h-3 border-2 border-[#1A1A1A] bg-[#FBFBF7]">
-                <div
-                  className="h-full transition-[width]"
-                  style={{
-                    width: `${progress.percentComplete}%`,
-                    backgroundColor: linkedProject.color,
-                  }}
-                  aria-hidden="true"
+                <div className="mt-3 grid gap-1 text-xs font-bold sm:grid-cols-2">
+                  <p>
+                    Progress:{" "}
+                    <span className="font-black">
+                      {progress.completed}/{projectFile.totalTarget}
+                    </span>
+                  </p>
+                  <p>
+                    Required{" "}
+                    {recommendationMode === "weekly" ? "weekly" : "today"}:{" "}
+                    <span className="font-black">
+                      {formatProjectFileRequirement(
+                        requiredRecommendation,
+                        projectFile.unitName,
+                      )}
+                    </span>
+                  </p>
+                  <p>
+                    Remaining:{" "}
+                    <span className="font-black">{progress.remaining}</span>
+                  </p>
+                  <p>
+                    Days left:{" "}
+                    <span className="font-black">
+                      {progress.daysLeftInclusive}
+                    </span>
+                  </p>
+                  <p>
+                    Target:{" "}
+                    <span className="font-black">
+                      {formatProjectFileRequirement(
+                        targetRecommendation,
+                        projectFile.unitName,
+                      )}
+                    </span>
+                  </p>
+                  <p>
+                    Completed{" "}
+                    {recommendationMode === "weekly" ? "week" : "today"}:{" "}
+                    <span className="font-black">
+                      {completedRecommendation}
+                    </span>
+                  </p>
+                </div>
+              </button>
+
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <RecommendationModeButton
+                  label="Daily"
+                  active={recommendationMode === "daily"}
+                  onClick={() =>
+                    onRecommendationModeChange(projectFile.id, "daily")
+                  }
+                />
+                <RecommendationModeButton
+                  label="Weekly"
+                  active={recommendationMode === "weekly"}
+                  onClick={() =>
+                    onRecommendationModeChange(projectFile.id, "weekly")
+                  }
                 />
               </div>
-
-              <div className="mt-3 grid gap-1 text-xs font-bold sm:grid-cols-2">
-                <p>
-                  Progress:{" "}
-                  <span className="font-black">
-                    {progress.completed}/{projectFile.totalTarget}
-                  </span>
-                </p>
-                <p>
-                  Required today:{" "}
-                  <span className="font-black">
-                    {formatProjectFileRequirement(
-                      progress.requiredToday,
-                      projectFile.unitName,
-                    )}
-                  </span>
-                </p>
-                <p>
-                  Remaining:{" "}
-                  <span className="font-black">{progress.remaining}</span>
-                </p>
-                <p>
-                  Days left:{" "}
-                  <span className="font-black">
-                    {progress.daysLeftInclusive}
-                  </span>
-                </p>
-              </div>
-            </button>
+            </article>
           );
         })}
       </div>
     </section>
+  );
+}
+
+function RecommendationModeButton({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  const activeColor =
+    label === "Weekly"
+      ? PROJECT_FILE_WEEKLY_RECOMMENDED_COLOR
+      : PROJECT_FILE_DAILY_RECOMMENDED_COLOR;
+
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={onClick}
+      className={`min-h-9 border-2 border-[#1A1A1A] px-2 py-1 text-xs font-black transition focus:outline-none focus:ring-4 focus:ring-[#6FB6FF] ${
+        active
+          ? "shadow-[2px_2px_0_#1A1A1A]"
+          : "bg-white hover:bg-[#F7F8F3]"
+      }`}
+      style={active ? { backgroundColor: activeColor } : undefined}
+    >
+      {label}
+    </button>
   );
 }
 

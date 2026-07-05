@@ -6,21 +6,36 @@ import type {
 } from "@/lib/project-files";
 import {
   PROJECT_FILE_COMPLETED_COLOR,
+  PROJECT_FILE_DAILY_RECOMMENDED_COLOR,
+  PROJECT_FILE_WEEKLY_RECOMMENDED_COLOR,
   getReadableTextColor,
+  type ProjectFileRecommendationMode,
 } from "@/lib/project-files";
 
 type ProjectFileBlockGridProps = {
   projectFile: ProjectFile;
   progress: ProjectFileProgress;
+  recommendationMode: ProjectFileRecommendationMode;
   onToggleBlock: (blockIndex: number) => void;
 };
 
 export function ProjectFileBlockGrid({
   projectFile,
   progress,
+  recommendationMode,
   onToggleBlock,
 }: ProjectFileBlockGridProps) {
-  const recommendedToday = new Set(progress.todayRecommendedBlockIndexes);
+  const recommendedIndexes =
+    recommendationMode === "weekly"
+      ? progress.weekRecommendedBlockIndexes
+      : progress.todayRecommendedBlockIndexes;
+  const recommendedBlocks = new Set(recommendedIndexes);
+  const recommendedColor =
+    recommendationMode === "weekly"
+      ? PROJECT_FILE_WEEKLY_RECOMMENDED_COLOR
+      : PROJECT_FILE_DAILY_RECOMMENDED_COLOR;
+  const recommendedLabel =
+    recommendationMode === "weekly" ? "Recommended weekly" : "Recommended today";
   const completedTextColor = getReadableTextColor(PROJECT_FILE_COMPLETED_COLOR);
 
   return (
@@ -34,7 +49,10 @@ export function ProjectFileBlockGrid({
             {projectFile.totalTarget} {projectFile.unitName}
           </h2>
         </div>
-        <span className="w-fit border-2 border-[#1A1A1A] bg-[#FFD91A] px-3 py-1 text-sm font-black">
+        <span
+          className="w-fit border-2 border-[#1A1A1A] px-3 py-1 text-sm font-black"
+          style={{ backgroundColor: recommendedColor }}
+        >
           Tap to complete
         </span>
       </div>
@@ -46,7 +64,7 @@ export function ProjectFileBlockGrid({
         }}
       >
         {projectFile.blocks.map((block) => {
-          const recommended = recommendedToday.has(block.index);
+          const recommended = recommendedBlocks.has(block.index);
 
           return (
             <button
@@ -68,7 +86,7 @@ export function ProjectFileBlockGrid({
                 backgroundColor: block.completed
                   ? PROJECT_FILE_COMPLETED_COLOR
                   : recommended
-                    ? "#FFD91A"
+                    ? recommendedColor
                     : "#FFFFFF",
                 color: block.completed ? completedTextColor : "#1A1A1A",
               }}
@@ -81,7 +99,7 @@ export function ProjectFileBlockGrid({
 
       <div className="mt-4 flex flex-wrap gap-2 text-xs font-black">
         <LegendChip color={PROJECT_FILE_COMPLETED_COLOR} label="Completed" />
-        <LegendChip color="#FFD91A" label="Recommended today" />
+        <LegendChip color={recommendedColor} label={recommendedLabel} />
         <LegendChip color="#FFFFFF" label="Remaining" />
       </div>
     </section>

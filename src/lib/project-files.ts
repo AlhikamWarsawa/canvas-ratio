@@ -4,6 +4,10 @@ import type { ProjectRecord } from "@/types/canvas";
 export const PROJECT_FILES_STORAGE_KEY = "canvas-ratio:project-files:v1";
 export const PROJECT_FILE_FALLBACK_COLOR = "#EFEDE4";
 export const PROJECT_FILE_COMPLETED_COLOR = "#1E8A4A";
+export const PROJECT_FILE_DAILY_RECOMMENDED_COLOR = "#FFD91A";
+export const PROJECT_FILE_WEEKLY_RECOMMENDED_COLOR = "#FF6A2A";
+
+export type ProjectFileRecommendationMode = "daily" | "weekly";
 
 export type ProjectFileBlock = {
   index: number;
@@ -45,17 +49,25 @@ export type ProjectFileInput = {
 
 export type ProjectFileProgress = {
   currentDate: string;
+  currentWeekStartDate: string;
   completed: number;
   completedBeforeToday: number;
+  completedBeforeThisWeek: number;
   remaining: number;
   remainingAtStartOfToday: number;
+  remainingAtStartOfThisWeek: number;
   percentComplete: number;
   daysLeftInclusive: number;
+  weeksLeftInclusive: number;
   targetDatePassed: boolean;
   todayTargetBase: number;
   requiredToday: number;
+  weeklyTargetBase: number;
+  requiredThisWeek: number;
   completedToday: number;
+  completedThisWeek: number;
   todayRecommendedBlockIndexes: number[];
+  weekRecommendedBlockIndexes: number[];
 };
 
 export type ProjectFileReviewData = ProjectFileProgress & {
@@ -204,18 +216,35 @@ export function calculateProjectFileProgress(
   projectFile: ProjectFile,
 ): ProjectFileProgress {
   const currentDate = getTodayDateKey();
+  const currentWeekStartDate = getWeekStartDateKey(currentDate);
   const completed = projectFile.blocks.filter((block) => block.completed).length;
   const completedBeforeToday = projectFile.blocks.filter(
     (block) =>
       block.completed && (!block.completedAt || block.completedAt < currentDate),
   ).length;
+  const completedBeforeThisWeek = projectFile.blocks.filter(
+    (block) =>
+      block.completed &&
+      (!block.completedAt || block.completedAt < currentWeekStartDate),
+  ).length;
   const completedToday = projectFile.blocks.filter(
     (block) => block.completed && block.completedAt === currentDate,
+  ).length;
+  const completedThisWeek = projectFile.blocks.filter(
+    (block) =>
+      block.completed &&
+      block.completedAt &&
+      block.completedAt >= currentWeekStartDate &&
+      block.completedAt <= currentDate,
   ).length;
   const remaining = Math.max(0, projectFile.totalTarget - completed);
   const remainingAtStartOfToday = Math.max(
     0,
     projectFile.totalTarget - completedBeforeToday,
+  );
+  const remainingAtStartOfThisWeek = Math.max(
+    0,
+    projectFile.totalTarget - completedBeforeThisWeek,
   );
   const daysDifference = differenceInCalendarDays(
     projectFile.targetDate,
@@ -223,38 +252,65 @@ export function calculateProjectFileProgress(
   );
   const targetDatePassed = daysDifference < 0;
   const daysLeftInclusive = targetDatePassed ? 1 : Math.max(1, daysDifference + 1);
+  const weeksLeftInclusive = targetDatePassed
+    ? 1
+    : Math.max(1, Math.ceil(daysLeftInclusive / 7));
   const rawTodayTargetBase =
     remainingAtStartOfToday === 0
       ? 0
       : remainingAtStartOfToday / daysLeftInclusive;
+  const rawWeeklyTargetBase =
+    remainingAtStartOfThisWeek === 0
+      ? 0
+      : remainingAtStartOfThisWeek / weeksLeftInclusive;
   const todayTargetBase =
     rawTodayTargetBase > 0 && rawTodayTargetBase < 1
       ? rawTodayTargetBase
       : Math.ceil(rawTodayTargetBase);
+  const weeklyTargetBase =
+    rawWeeklyTargetBase > 0 && rawWeeklyTargetBase < 1
+      ? rawWeeklyTargetBase
+      : Math.ceil(rawWeeklyTargetBase);
   const requiredToday =
     remaining === 0 ? 0 : Math.max(0, todayTargetBase - completedToday);
+  const requiredThisWeek =
+    remaining === 0 ? 0 : Math.max(0, weeklyTargetBase - completedThisWeek);
   const recommendedBlockCount = requiredToday > 0 ? Math.ceil(requiredToday) : 0;
+  const weeklyRecommendedBlockCount =
+    requiredThisWeek > 0 ? Math.ceil(requiredThisWeek) : 0;
   const todayRecommendedBlockIndexes = projectFile.blocks
     .filter((block) => !block.completed)
     .slice(0, recommendedBlockCount)
     .map((block) => block.index);
+  const weekRecommendedBlockIndexes = projectFile.blocks
+    .filter((block) => !block.completed)
+    .slice(0, weeklyRecommendedBlockCount)
+    .map((block) => block.index);
 
   return {
     currentDate,
+    currentWeekStartDate,
     completed,
     completedBeforeToday,
+    completedBeforeThisWeek,
     remaining,
     remainingAtStartOfToday,
+    remainingAtStartOfThisWeek,
     percentComplete:
       projectFile.totalTarget === 0
         ? 0
         : Math.round((completed / projectFile.totalTarget) * 1000) / 10,
     daysLeftInclusive,
+    weeksLeftInclusive,
     targetDatePassed,
     todayTargetBase,
     requiredToday,
+    weeklyTargetBase,
+    requiredThisWeek,
     completedToday,
+    completedThisWeek,
     todayRecommendedBlockIndexes,
+    weekRecommendedBlockIndexes,
   };
 }
 
@@ -409,6 +465,7 @@ export function buildProjectFileHtml(
       <div class="summary">
         <div class="metric">Progress: ${progress.percentComplete}%</div>
         <div class="metric">Required today: ${escapeHtml(formatProjectFileRequirement(progress.requiredToday, projectFile.unitName))}</div>
+        <div class="metric">Required this week: ${escapeHtml(formatProjectFileRequirement(progress.requiredThisWeek, projectFile.unitName))}</div>
         <div class="metric">Completed today: ${progress.completedToday}</div>
         <div class="metric">Remaining: ${progress.remaining}</div>
         <div class="metric">Days left: ${progress.daysLeftInclusive}</div>
@@ -637,6 +694,23 @@ function formatProjectFileRequirementNumber(value: number): string {
 
 function differenceInCalendarDays(targetDate: string, todayDate: string): number {
   return Math.round((getUtcDayTime(targetDate) - getUtcDayTime(todayDate)) / 86400000);
+}
+
+function getWeekStartDateKey(dateKey: string): string {
+  const dayTime = getUtcDayTime(dateKey);
+  const dayOfWeek = new Date(dayTime).getUTCDay();
+  const daysSinceMonday = (dayOfWeek + 6) % 7;
+
+  return createUtcDateKey(dayTime - daysSinceMonday * 86400000);
+}
+
+function createUtcDateKey(dayTime: number): string {
+  const date = new Date(dayTime);
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
 }
 
 function getUtcDayTime(dateKey: string): number {

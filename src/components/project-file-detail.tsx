@@ -5,6 +5,8 @@ import { InlineMessage } from "@/components/inline-message";
 import { ProjectFileBlockGrid } from "@/components/project-file-block-grid";
 import { ProjectFileReviewButton } from "@/components/project-file-review-button";
 import {
+  PROJECT_FILE_DAILY_RECOMMENDED_COLOR,
+  PROJECT_FILE_WEEKLY_RECOMMENDED_COLOR,
   buildProjectFileHtml,
   calculateProjectFileProgress,
   formatProjectFileRequirement,
@@ -13,6 +15,7 @@ import {
   resolveProjectFileProject,
   toggleProjectFileBlock,
   type ProjectFile,
+  type ProjectFileRecommendationMode,
 } from "@/lib/project-files";
 import { getActiveProjects } from "@/lib/settings";
 import type { ProjectRecord } from "@/types/canvas";
@@ -20,6 +23,10 @@ import type { ProjectRecord } from "@/types/canvas";
 type ProjectFileDetailProps = {
   projectFile: ProjectFile | null;
   projects: ProjectRecord[];
+  recommendationMode: ProjectFileRecommendationMode;
+  onRecommendationModeChange?: (
+    recommendationMode: ProjectFileRecommendationMode,
+  ) => void;
   onUpdateProjectFile: (projectFile: ProjectFile) => void;
   onDeleteProjectFile: (projectFileId: string) => void;
 };
@@ -30,6 +37,8 @@ const actionButtonClass =
 export function ProjectFileDetail({
   projectFile,
   projects,
+  recommendationMode,
+  onRecommendationModeChange,
   onUpdateProjectFile,
   onDeleteProjectFile,
 }: ProjectFileDetailProps) {
@@ -127,7 +136,24 @@ export function ProjectFileDetail({
   }
 
   const linkedTextColor = getReadableTextColor(linkedProject.color);
-  const requiredTodayValue = formatProjectFileRequirement(progress.requiredToday);
+  const requiredRecommendation =
+    recommendationMode === "weekly"
+      ? progress.requiredThisWeek
+      : progress.requiredToday;
+  const targetRecommendation =
+    recommendationMode === "weekly"
+      ? progress.weeklyTargetBase
+      : progress.todayTargetBase;
+  const completedRecommendation =
+    recommendationMode === "weekly"
+      ? progress.completedThisWeek
+      : progress.completedToday;
+  const requiredRecommendationValue =
+    formatProjectFileRequirement(requiredRecommendation);
+  const recommendationPeriodLabel =
+    recommendationMode === "weekly" ? "weekly" : "today";
+  const recommendationPeriodNoun =
+    recommendationMode === "weekly" ? "week" : "today";
 
   return (
     <div className="grid min-w-0 gap-4">
@@ -155,6 +181,16 @@ export function ProjectFileDetail({
           </div>
 
           <div className="flex flex-wrap gap-2">
+            <RecommendationModeButton
+              label="Daily"
+              active={recommendationMode === "daily"}
+              onClick={() => onRecommendationModeChange?.("daily")}
+            />
+            <RecommendationModeButton
+              label="Weekly"
+              active={recommendationMode === "weekly"}
+              onClick={() => onRecommendationModeChange?.("weekly")}
+            />
             <ProjectFileReviewButton
               projectFile={projectFile}
               projects={projects}
@@ -181,19 +217,19 @@ export function ProjectFileDetail({
           />
         </div>
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           <MetricCard
-            label="Required today"
-            value={formatProjectFileRequirement(progress.requiredToday)}
+            label={`Required ${recommendationPeriodLabel}`}
+            value={formatProjectFileRequirement(requiredRecommendation)}
             detail={
               progress.remaining === 0
                 ? "Completed."
-                : `Target ${formatProjectFileRequirement(progress.todayTargetBase)}`
+                : `Target ${formatProjectFileRequirement(targetRecommendation)}`
             }
           />
           <MetricCard
-            label="Completed today"
-            value={String(progress.completedToday)}
+            label={`Completed ${recommendationPeriodNoun}`}
+            value={String(completedRecommendation)}
             detail={projectFile.unitName}
           />
           <MetricCard
@@ -219,20 +255,25 @@ export function ProjectFileDetail({
           </InlineMessage>
         ) : progress.targetDatePassed ? (
           <InlineMessage type="warning" className="mt-4">
-            Target date has passed. Today’s required work uses 1 day so the
-            number stays practical.
+            Target date has passed.{" "}
+            {recommendationMode === "weekly"
+              ? "Weekly required work uses 1 week"
+              : "Today’s required work uses 1 day"}{" "}
+            so the number stays practical.
           </InlineMessage>
-        ) : progress.requiredToday > 0 ? (
+        ) : requiredRecommendation > 0 ? (
           <InlineMessage type="info" className="mt-4">
             Do{" "}
-            {isPartialProjectFileRequirement(progress.requiredToday)
-              ? requiredTodayValue
-              : `${requiredTodayValue} more ${projectFile.unitName}`}{" "}
-            today to match this plan.
+            {isPartialProjectFileRequirement(requiredRecommendation)
+              ? requiredRecommendationValue
+              : `${requiredRecommendationValue} more ${projectFile.unitName}`}{" "}
+            {recommendationMode === "weekly" ? "this week" : "today"} to match
+            this plan.
           </InlineMessage>
         ) : (
           <InlineMessage type="info" className="mt-4">
-            Today’s recommended work is covered.
+            {recommendationMode === "weekly" ? "This week’s" : "Today’s"}{" "}
+            recommended work is covered.
           </InlineMessage>
         )}
       </section>
@@ -240,6 +281,7 @@ export function ProjectFileDetail({
       <ProjectFileBlockGrid
         projectFile={projectFile}
         progress={progress}
+        recommendationMode={recommendationMode}
         onToggleBlock={handleToggleBlock}
       />
 
@@ -355,6 +397,37 @@ function LinkedProjectBadge({
         </span>
       ) : null}
     </div>
+  );
+}
+
+function RecommendationModeButton({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  const activeColor =
+    label === "Weekly"
+      ? PROJECT_FILE_WEEKLY_RECOMMENDED_COLOR
+      : PROJECT_FILE_DAILY_RECOMMENDED_COLOR;
+
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={onClick}
+      className={`min-h-11 border-2 border-[#1A1A1A] px-4 py-2 text-sm font-black transition focus:outline-none focus:ring-4 focus:ring-[#6FB6FF] ${
+        active
+          ? "shadow-[3px_3px_0_#1A1A1A]"
+          : "bg-white hover:bg-[#F7F8F3]"
+      }`}
+      style={active ? { backgroundColor: activeColor } : undefined}
+    >
+      {label}
+    </button>
   );
 }
 
