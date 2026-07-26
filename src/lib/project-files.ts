@@ -481,14 +481,23 @@ ${json}
 </html>`;
 }
 
-export function parseProjectFileImport(fileContents: string): ProjectFile | null {
-  const scriptMatch = fileContents.match(
-    /<script[^>]*id=["']canvas-ratio-project-file["'][^>]*>([\s\S]*?)<\/script>/i,
-  );
-  const rawJson = scriptMatch?.[1]?.trim() ?? fileContents.trim();
+export function buildProjectFileJson(
+  projectFile: ProjectFile,
+  projects: ProjectRecord[] = [],
+): string {
+  const exportPayload: ProjectFile = {
+    ...projectFile,
+    projectSnapshot:
+      getProjectFileProjectSnapshot(projectFile, projects) ??
+      projectFile.projectSnapshot,
+  };
 
+  return `${JSON.stringify(exportPayload, null, 2)}\n`;
+}
+
+export function parseProjectFileImport(fileContents: string): ProjectFile | null {
   try {
-    return normalizeProjectFile(JSON.parse(rawJson));
+    return normalizeProjectFile(JSON.parse(fileContents.trim()));
   } catch {
     return null;
   }

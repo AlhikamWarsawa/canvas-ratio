@@ -77,7 +77,7 @@ export function ProjectFileList({
 
       {totalFileCount === 0 ? (
         <InlineMessage type="info" className="mt-4">
-          No project files yet. Create one below or import an exported HTML file.
+          No project files yet. Create one below or import an exported JSON file.
         </InlineMessage>
       ) : files.length === 0 ? (
         <InlineMessage type="info" className="mt-4">
@@ -326,10 +326,10 @@ function ProjectFileImportControl({
 
   return (
     <label className="inline-flex min-h-11 cursor-pointer items-center justify-center border-2 border-[#1A1A1A] bg-[#FFD91A] px-3 py-2 text-sm font-black shadow-[3px_3px_0_#1A1A1A] transition hover:-translate-y-0.5 focus-within:ring-4 focus-within:ring-[#6FB6FF]">
-      Import HTML
+      Import JSON
       <input
         type="file"
-        accept=".html,.json,text/html,application/json"
+        accept=".json,application/json"
         onChange={handleChange}
         className="sr-only"
       />

@@ -7,7 +7,7 @@ import { ProjectFileReviewButton } from "@/components/project-file-review-button
 import {
   PROJECT_FILE_DAILY_RECOMMENDED_COLOR,
   PROJECT_FILE_WEEKLY_RECOMMENDED_COLOR,
-  buildProjectFileHtml,
+  buildProjectFileJson,
   calculateProjectFileProgress,
   formatProjectFileRequirement,
   isPartialProjectFileRequirement,
@@ -198,10 +198,10 @@ export function ProjectFileDetail({
             />
             <button
               type="button"
-              onClick={() => downloadProjectFileHtml(projectFile, projects)}
+              onClick={() => downloadProjectFileJson(projectFile, projects)}
               className="min-h-11 border-2 border-[#1A1A1A] bg-[#FFD91A] px-4 py-2 text-sm font-black shadow-[3px_3px_0_#1A1A1A] transition hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-[#6FB6FF]"
             >
-              Export HTML
+              Export JSON
             </button>
           </div>
         </div>
@@ -451,19 +451,19 @@ function MetricCard({
   );
 }
 
-function downloadProjectFileHtml(
+function downloadProjectFileJson(
   projectFile: ProjectFile,
   projects: ProjectRecord[],
 ) {
-  const html = buildProjectFileHtml(projectFile, projects);
-  const blob = new Blob([html], { type: "text/html" });
+  const json = buildProjectFileJson(projectFile, projects);
+  const blob = new Blob([json], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
 
   link.href = url;
   link.download = `canvas-ratio-project-file-${slugify(
     projectFile.projectName,
-  )}.html`;
+  )}.json`;
   document.body.append(link);
   link.click();
   link.remove();
