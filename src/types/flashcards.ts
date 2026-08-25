@@ -12,6 +12,7 @@ export type Flashcard = {
   deck_id: string;
   front: string;
   back: string;
+  image_url?: string;
   ease_factor: number;
   interval: number;
   repetitions: number;

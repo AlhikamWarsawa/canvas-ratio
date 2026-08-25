@@ -107,9 +107,9 @@ function setDays(card: Flashcard, days: number, now: Date) {
   card.due_at = due.toISOString();
 }
 
-export function createFlashcard(deckId: string, front: string, back: string): Flashcard {
+export function createFlashcard(deckId: string, front: string, back: string, image_url = ""): Flashcard {
   const now = new Date();
-  return { id: crypto.randomUUID(), deck_id: deckId, front, back, ease_factor: 2.5, interval: 0, repetitions: 0, due_date: localDate(now), due_at: now.toISOString(), status: "new", lapses: 0, learning_step: 0 };
+  return { id: crypto.randomUUID(), deck_id: deckId, front, back, image_url, ease_factor: 2.5, interval: 0, repetitions: 0, due_date: localDate(now), due_at: now.toISOString(), status: "new", lapses: 0, learning_step: 0 };
 }
 
 export function statusLabel(status: FlashcardStatus): string {
