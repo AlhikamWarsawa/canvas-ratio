@@ -17,68 +17,49 @@ export function isDue(card: Flashcard, now = new Date()): boolean {
 }
 
 export function intervalPreview(card: Flashcard, rating: FlashcardRating): string {
-  if (card.status === "new" || card.status === "learning" || card.status === "relearning") {
-    if (rating === 1) return "<1m";
-    if (rating === 2) return "<6m";
-    if (rating === 3) return "<10m";
-    return "1d";
-  }
-  const base = Math.max(1, card.interval);
-  const days = rating === 2 ? Math.max(1, Math.round(base * 1.2)) : rating === 3 ? Math.max(1, Math.round(base * card.ease_factor)) : rating === 4 ? Math.max(1, Math.round(base * card.ease_factor * 1.3)) : 1;
+  const quality = qualityForRating(rating);
+  if (quality < 3) return "1d";
+  const days = card.interval <= 1 ? 6 : Math.min(365, Math.max(1, Math.round(card.interval * nextEase(card.ease_factor, quality))));
   return `${days}d`;
 }
 
 export function scheduleFlashcard(card: Flashcard, rating: FlashcardRating, now = new Date()): Flashcard {
   const next = { ...card };
-  next.ease_factor = Math.max(1.3, card.ease_factor + (rating === 1 ? -0.2 : rating === 2 ? -0.15 : rating === 4 ? 0.15 : 0));
-  if (rating === 1) {
-    next.status = card.status === "new" ? "learning" : "relearning";
+  const quality = qualityForRating(rating);
+  next.ease_factor = nextEase(card.ease_factor, quality);
+  if (quality < 3) {
+    next.status = "relearning";
     next.learning_step = 0;
     next.repetitions = 0;
-    next.interval = 0;
-    next.lapses = card.lapses + 1;
-    setMinutes(next, LEARNING_STEPS_MINUTES[0], now);
-    return next;
-  }
-  if (card.status === "new" || card.status === "learning" || card.status === "relearning") {
-    if (rating === 2) {
-      next.status = card.status === "new" ? "learning" : card.status;
-      next.learning_step = Math.min(card.learning_step + 1, LEARNING_STEPS_MINUTES.length - 1);
-      setMinutes(next, 6, now);
-      return next;
-    }
-    if (rating === 3) {
-      next.status = card.status === "new" ? "learning" : card.status;
-      next.learning_step = Math.min(card.learning_step + 1, LEARNING_STEPS_MINUTES.length - 1);
-      setMinutes(next, 10, now);
-      return next;
-    }
-    if (rating === 4) {
-      next.status = "review";
-      next.interval = 1;
-      next.repetitions = Math.max(1, card.repetitions + 1);
-      setDays(next, 1, now);
-      return next;
-    }
-    next.status = "review";
     next.interval = 1;
-    next.repetitions = Math.max(1, card.repetitions + 1);
+    next.lapses = card.lapses + 1;
     setDays(next, 1, now);
     return next;
   }
-  const base = Math.max(1, card.interval);
   next.status = "review";
   next.repetitions = card.repetitions + 1;
-  next.interval = rating === 2 ? Math.max(1, Math.round(base * 1.2)) : rating === 3 ? Math.max(1, Math.round(base * card.ease_factor)) : Math.max(1, Math.round(base * card.ease_factor * 1.3));
+  next.interval = card.interval <= 1 ? 6 : Math.min(365, Math.max(1, Math.round(card.interval * next.ease_factor)));
   setDays(next, next.interval, now);
   return next;
 }
 
+function qualityForRating(rating: FlashcardRating): 1 | 3 | 4 | 5 {
+  return rating === 1 ? 1 : rating === 2 ? 3 : rating === 3 ? 4 : 5;
+}
+
+function nextEase(current: number, quality: 1 | 3 | 4 | 5): number {
+  const gap = 5 - quality;
+  const delta = 0.1 - gap * (0.08 + gap * 0.02);
+  return Math.max(1.3, current + delta);
+}
+
 export function getFlashcardQueue(cards: Flashcard[], settings: { newCardsPerDay: number; maxReviewsPerDay: number }, now = new Date()): Flashcard[] {
-  const learning = shuffle(cards.filter((card) => (card.status === "learning" || card.status === "relearning") && isDue(card, now)));
-  const reviews = shuffle(cards.filter((card) => card.status === "review" && isDue(card, now)));
-  const fresh = shuffle(cards.filter((card) => card.status === "new")).slice(0, settings.newCardsPerDay);
-  return [...learning, ...reviews, ...fresh].slice(0, settings.maxReviewsPerDay);
+  const skippedOrLearning = shuffle(cards.filter((card) => (card.status === "learning" || card.status === "relearning") && isDue(card, now)));
+  const wrongDue = shuffle(cards.filter((card) => card.status === "review" && card.lapses > 0 && isDue(card, now)));
+  const unseen = shuffle(cards.filter((card) => card.status === "new")).slice(0, settings.newCardsPerDay);
+  const correctDue = shuffle(cards.filter((card) => card.status === "review" && card.lapses === 0 && isDue(card, now)));
+  const notYetDue = shuffle(cards.filter((card) => card.status === "review" && !isDue(card, now)));
+  return [...skippedOrLearning, ...wrongDue, ...unseen, ...correctDue, ...notYetDue].slice(0, settings.maxReviewsPerDay);
 }
 
 function shuffle<T>(items: T[]): T[] {
