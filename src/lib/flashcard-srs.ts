@@ -94,6 +94,17 @@ export function isLeech(card: Flashcard): boolean {
   return card.lapses >= 8;
 }
 
+export function recallCountdown(card: Flashcard, now = new Date()): string {
+  const due = new Date(card.due_at).getTime();
+  const remaining = due - now.getTime();
+  if (remaining <= 0) return "Ready now";
+  const minutes = Math.ceil(remaining / 60_000);
+  if (minutes < 60) return `${minutes}m`;
+  const hours = Math.ceil(minutes / 60);
+  if (hours < 24) return `${hours}h`;
+  return `${Math.ceil(hours / 24)}d`;
+}
+
 function setMinutes(card: Flashcard, minutes: number, now: Date) {
   const due = new Date(now.getTime() + minutes * 60_000);
   card.due_at = due.toISOString();
