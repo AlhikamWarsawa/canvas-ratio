@@ -88,17 +88,28 @@ export default function LandingPage() {
             <Link className="hover:text-[#2F5FBF]" href="/project-files">
               Project Files
             </Link>
+            <Link className="hover:text-[#2F5FBF]" href="/study-lab">
+              Study Lab
+            </Link>
             <Link className="hover:text-[#2F5FBF]" href="#how-it-works">
               How It Works
             </Link>
           </div>
 
-          <Link
-            href="/canvas"
-            className="min-h-11 border-2 border-[#1A1A1A] bg-[#1A1A1A] px-4 py-2 text-sm font-black text-white shadow-[3px_3px_0_#FFD91A] transition hover:bg-[#2F5FBF] focus:outline-none focus:ring-4 focus:ring-[#6FB6FF]"
-          >
-            Open Canvas
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/canvas"
+              className="min-h-11 border-2 border-[#1A1A1A] bg-[#1A1A1A] px-4 py-2 text-sm font-black text-white shadow-[3px_3px_0_#FFD91A] transition hover:bg-[#2F5FBF] focus:outline-none focus:ring-4 focus:ring-[#6FB6FF]"
+            >
+              Open Canvas
+            </Link>
+            <Link
+              href="/study-lab"
+              className="min-h-11 border-2 border-[#1A1A1A] bg-[#8BCF3F] px-4 py-2 text-sm font-black shadow-[3px_3px_0_#1A1A1A] transition hover:bg-[#FFD91A] focus:outline-none focus:ring-4 focus:ring-[#6FB6FF]"
+            >
+              Study Lab
+            </Link>
+          </div>
         </nav>
       </header>
 
