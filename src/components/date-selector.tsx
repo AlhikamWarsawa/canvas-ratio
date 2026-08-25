@@ -10,6 +10,7 @@ type DateSelectorProps = {
 
 const statusLabels: Record<DayStatus, string> = {
   today: "Today: Editable",
+  tomorrow: "Tomorrow: Editable",
   past: "Past: Read-only",
   future: "Future: Not available",
 };

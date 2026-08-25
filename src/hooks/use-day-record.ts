@@ -36,7 +36,7 @@ export function useDayRecord(dateKey: string): UseDayRecordResult {
       return;
     }
 
-    if (status === "today") {
+    if (status === "today" || status === "tomorrow") {
       setDay(ensureDayRecord(dateKey));
       setLoading(false);
       return;

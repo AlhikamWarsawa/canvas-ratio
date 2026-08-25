@@ -14,6 +14,11 @@ const statusContent: Record<
     description: "Editable",
     className: "bg-[#8BCF3F]",
   },
+  tomorrow: {
+    label: "Tomorrow",
+    description: "Editable",
+    className: "bg-[#8BCF3F]",
+  },
   past: {
     label: "Past",
     description: "Read-only",
