@@ -1,10 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
+import { InkTrail } from "@/components/ink-trail";
 
 export default function LandingPage() {
   return (
-    <main className="grid min-h-screen place-items-center bg-[#F7F8F3] px-5 text-[#181818]">
-      <section className="flex w-full max-w-3xl flex-col items-center gap-8 text-center">
+    <main className="relative isolate grid min-h-screen place-items-center bg-[#F7F8F3] px-5 text-[#181818]">
+      <InkTrail />
+      <section className="relative z-10 flex w-full max-w-3xl flex-col items-center gap-8 text-center">
         <Link href="/" className="flex items-center gap-3 text-3xl font-black sm:text-4xl">
           <Image src="/canvas-ratio.png" alt="" width={52} height={52} className="h-12 w-12 rounded-full border-2 border-[#1A1A1A] bg-white object-cover" />
           Canvas Ratio
