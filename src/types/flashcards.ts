@@ -21,10 +21,13 @@ export type Flashcard = {
   status: FlashcardStatus;
   lapses: number;
   learning_step: number;
+  stability?: number;
+  difficulty?: number;
+  last_review_at?: string;
 };
 
 export type FlashcardStore = {
   decks: FlashcardDeck[];
   cards: Flashcard[];
-  settings: { newCardsPerDay: number; maxReviewsPerDay: number };
+  settings: { newCardsPerDay: number; maxReviewsPerDay: number; desiredRetention: number };
 };

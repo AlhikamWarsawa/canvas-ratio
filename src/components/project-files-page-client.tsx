@@ -154,9 +154,15 @@ export function ProjectFilesPageClient({
           <div className="flex flex-wrap gap-2">
             <Link
               href="/canvas"
-              className="min-h-11 border-2 border-[#1A1A1A] bg-[#FFD91A] px-4 py-2 text-sm font-black shadow-[3px_3px_0_#1A1A1A] transition hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-[#6FB6FF]"
+              className="min-h-11 border-2 border-[#1A1A1A] bg-[#EF4444] px-4 py-2 text-sm font-black shadow-[3px_3px_0_#1A1A1A] transition hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-[#6FB6FF]"
             >
               Back to Canvas
+            </Link>
+            <Link
+              href="/study-lab"
+              className="min-h-11 border-2 border-[#1A1A1A] bg-[#8BCF3F] px-4 py-2 text-sm font-black shadow-[3px_3px_0_#1A1A1A] transition hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-[#6FB6FF]"
+            >
+              Study Lab
             </Link>
             <Link
               href="/"

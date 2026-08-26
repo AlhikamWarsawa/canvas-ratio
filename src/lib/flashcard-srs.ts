@@ -1,8 +1,11 @@
-import type { Flashcard, FlashcardStatus } from "@/types/flashcards";
+import { DEFAULT_LEARNING_STEPS_MINUTES, DEFAULT_RELEARNING_STEPS_MINUTES, scheduleFSRS, type FSRSRating } from "./fsrs";
+import type { Flashcard, FlashcardStatus } from "../types/flashcards";
 
 export type FlashcardRating = 1 | 2 | 3 | 4;
 
 export const LEARNING_STEPS_MINUTES = [1, 10] as const;
+
+const ratingNames: Record<FlashcardRating, FSRSRating> = { 1: 1, 2: 2, 3: 3, 4: 4 };
 
 export function localDate(date = new Date()): string {
   const year = date.getFullYear();
@@ -12,45 +15,19 @@ export function localDate(date = new Date()): string {
 }
 
 export function isDue(card: Flashcard, now = new Date()): boolean {
-  if (card.status === "learning" || card.status === "relearning") return card.due_at <= now.toISOString();
-  return card.status === "new" || card.due_date <= localDate(now);
+  if (card.status === "new") return true;
+  return card.due_at <= now.toISOString();
 }
 
 export function intervalPreview(card: Flashcard, rating: FlashcardRating): string {
-  const quality = qualityForRating(rating);
-  if (quality < 3) return "1d";
-  const days = card.interval <= 1 ? 6 : Math.min(365, Math.max(1, Math.round(card.interval * nextEase(card.ease_factor, quality))));
-  return `${days}d`;
+  const schedule = scheduleFSRS(card, ratingNames[rating], { fuzzFactorRange: 0 });
+  return schedule.newState === "learning" || schedule.newState === "relearning" ? `${Math.max(1, Math.round((schedule.newDueDate.getTime() - Date.now()) / 60_000))}m` : `${schedule.newInterval}d`;
 }
 
-export function scheduleFlashcard(card: Flashcard, rating: FlashcardRating, now = new Date()): Flashcard {
-  const next = { ...card };
-  const quality = qualityForRating(rating);
-  next.ease_factor = nextEase(card.ease_factor, quality);
-  if (quality < 3) {
-    next.status = "relearning";
-    next.learning_step = 0;
-    next.repetitions = 0;
-    next.interval = 1;
-    next.lapses = card.lapses + 1;
-    setDays(next, 1, now);
-    return next;
-  }
-  next.status = "review";
-  next.repetitions = card.repetitions + 1;
-  next.interval = card.interval <= 1 ? 6 : Math.min(365, Math.max(1, Math.round(card.interval * next.ease_factor)));
-  setDays(next, next.interval, now);
+export function scheduleFlashcard(card: Flashcard, rating: FlashcardRating, now = new Date(), desiredRetention = 0.9): Flashcard {
+  const schedule = scheduleFSRS(card, ratingNames[rating], { now, desiredRetention, learningStepsMinutes: DEFAULT_LEARNING_STEPS_MINUTES, relearningStepsMinutes: DEFAULT_RELEARNING_STEPS_MINUTES });
+  const next = { ...card, stability: schedule.newStability, difficulty: schedule.newDifficulty, last_review_at: now.toISOString(), ease_factor: Math.max(1.3, 3.2 - schedule.newDifficulty * 0.2), interval: schedule.newInterval, due_date: localDate(schedule.newDueDate), due_at: schedule.newDueDate.toISOString(), status: schedule.newState, learning_step: schedule.newState === "review" ? 0 : card.learning_step + 1, lapses: rating === 1 ? card.lapses + 1 : card.lapses, repetitions: rating === 1 ? 0 : card.repetitions + 1 };
   return next;
-}
-
-function qualityForRating(rating: FlashcardRating): 1 | 3 | 4 | 5 {
-  return rating === 1 ? 1 : rating === 2 ? 3 : rating === 3 ? 4 : 5;
-}
-
-function nextEase(current: number, quality: 1 | 3 | 4 | 5): number {
-  const gap = 5 - quality;
-  const delta = 0.1 - gap * (0.08 + gap * 0.02);
-  return Math.max(1.3, current + delta);
 }
 
 export function getFlashcardQueue(cards: Flashcard[], settings: { newCardsPerDay: number; maxReviewsPerDay: number }, now = new Date()): Flashcard[] {
@@ -58,8 +35,11 @@ export function getFlashcardQueue(cards: Flashcard[], settings: { newCardsPerDay
   const wrongDue = shuffle(cards.filter((card) => card.status === "review" && card.lapses > 0 && isDue(card, now)));
   const unseen = shuffle(cards.filter((card) => card.status === "new")).slice(0, settings.newCardsPerDay);
   const correctDue = shuffle(cards.filter((card) => card.status === "review" && card.lapses === 0 && isDue(card, now)));
-  const notYetDue = shuffle(cards.filter((card) => card.status === "review" && !isDue(card, now)));
-  return [...skippedOrLearning, ...wrongDue, ...unseen, ...correctDue, ...notYetDue].slice(0, settings.maxReviewsPerDay);
+  return [...skippedOrLearning, ...wrongDue, ...unseen, ...correctDue].slice(0, settings.maxReviewsPerDay);
+}
+
+export function getLearningQueue(cards: Flashcard[], now = new Date()): Flashcard[] {
+  return shuffle(cards.filter((card) => (card.status === "learning" || card.status === "relearning") && isDue(card, now)));
 }
 
 function shuffle<T>(items: T[]): T[] {
@@ -86,22 +66,9 @@ export function recallCountdown(card: Flashcard, now = new Date()): string {
   return `${Math.ceil(hours / 24)}d`;
 }
 
-function setMinutes(card: Flashcard, minutes: number, now: Date) {
-  const due = new Date(now.getTime() + minutes * 60_000);
-  card.due_at = due.toISOString();
-  card.due_date = localDate(due);
-}
-
-function setDays(card: Flashcard, days: number, now: Date) {
-  const due = new Date(now);
-  due.setDate(due.getDate() + days);
-  card.due_date = localDate(due);
-  card.due_at = due.toISOString();
-}
-
 export function createFlashcard(deckId: string, front: string, back: string, image_url = ""): Flashcard {
   const now = new Date();
-  return { id: crypto.randomUUID(), deck_id: deckId, front, back, image_url, ease_factor: 2.5, interval: 0, repetitions: 0, due_date: localDate(now), due_at: now.toISOString(), status: "new", lapses: 0, learning_step: 0 };
+  return { id: crypto.randomUUID(), deck_id: deckId, front, back, image_url, ease_factor: 2.5, interval: 0, repetitions: 0, due_date: localDate(now), due_at: now.toISOString(), status: "new", lapses: 0, learning_step: 0, stability: 0, difficulty: 5 };
 }
 
 export function statusLabel(status: FlashcardStatus): string {
