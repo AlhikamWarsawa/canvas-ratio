@@ -14,7 +14,6 @@ import { ProjectRatioForm } from "@/components/project-form";
 import { ProjectList } from "@/components/project-list";
 import { RandomEventForm } from "@/components/random-event-form";
 import { SleepForm } from "@/components/sleep-form";
-import { TaskDumpSidePanel } from "@/components/task-dump-side-panel";
 import { TaskForm } from "@/components/task-form";
 import { TaskList } from "@/components/task-list";
 import { useDayRecord } from "@/hooks/use-day-record";
@@ -25,7 +24,6 @@ import { formatSeconds, getPomodoroState } from "@/lib/pomodoro";
 import {
   getProjectRatioTotal,
   getProjectUsageFromSlots,
-  validateProjectRatios,
 } from "@/lib/projects";
 import { rebuildDaySlots } from "@/lib/rebuild";
 import {
@@ -44,11 +42,10 @@ type CanvasPageClientProps = {
   initialDateKey: string;
 };
 
-type DrawerTab = "dump" | "projects" | "paint" | "black" | "review";
-type MobileTab = "canvas" | "dump" | "projects" | "paint" | "review";
+type DrawerTab = "projects" | "paint" | "black" | "review";
+type MobileTab = "canvas" | "projects" | "paint" | "review";
 
 const drawerTabs: { id: DrawerTab; label: string }[] = [
-  { id: "dump", label: "Dump" },
   { id: "projects", label: "Projects" },
   { id: "paint", label: "Paint" },
   { id: "black", label: "Black" },
@@ -57,7 +54,6 @@ const drawerTabs: { id: DrawerTab; label: string }[] = [
 
 const mobileTabs: { id: MobileTab; label: string }[] = [
   { id: "canvas", label: "Canvas" },
-  { id: "dump", label: "Dump" },
   { id: "projects", label: "Projects" },
   { id: "paint", label: "Paint" },
   { id: "review", label: "Review" },
@@ -108,10 +104,6 @@ export function CanvasPageClient({ initialDateKey }: CanvasPageClientProps) {
       fullDaySummary: summarizeSlots(slots),
     };
   }, [day]);
-  const ratioValidation = useMemo(
-    () => validateProjectRatios(projects),
-    [projects],
-  );
   const projectUsage = useMemo(
     () => (day ? getProjectUsageFromSlots(day, projects) : []),
     [day, projects],
@@ -127,9 +119,7 @@ export function CanvasPageClient({ initialDateKey }: CanvasPageClientProps) {
   const hasProjects = projects.length > 0;
   const activePanelTab: DrawerTab = isDesktop
     ? activeDrawerTab
-    : activeMobileTab === "dump"
-      ? "dump"
-      : activeMobileTab === "projects"
+    : activeMobileTab === "projects"
         ? "projects"
         : activeMobileTab === "paint"
           ? "paint"
@@ -381,12 +371,6 @@ export function CanvasPageClient({ initialDateKey }: CanvasPageClientProps) {
 
     return (
       <div className="space-y-4">
-        {status === "past" ? (
-          <InlineMessage type="info">
-            Past canvas is read-only.
-          </InlineMessage>
-        ) : null}
-
         <section className="grid min-w-0 gap-4 xl:grid-cols-2">
           <CellCanvas
             mode="am"
@@ -426,20 +410,6 @@ export function CanvasPageClient({ initialDateKey }: CanvasPageClientProps) {
   }
 
   function renderPanelContent(tab: DrawerTab) {
-    if (tab === "dump") {
-      return (
-        <PanelStack>
-          <TaskDumpSidePanel
-            day={day}
-            settings={settings}
-            editable={editable}
-            status={status}
-            onSaveDay={saveDay}
-          />
-        </PanelStack>
-      );
-    }
-
     if (tab === "projects") {
       return (
         <PanelStack>
@@ -454,23 +424,13 @@ export function CanvasPageClient({ initialDateKey }: CanvasPageClientProps) {
             selectedProjectId={selectedProjectId}
           />
           <RatioProgress totalRatio={totalRatio} />
-          {hasProjects && ratioValidation.message ? (
-            <InlineMessage type="warning">
-              Ratios should total 100% for clean recommendations. The app
-              normalizes them automatically, and you can still paint freely.
-            </InlineMessage>
-          ) : null}
           {editable ? (
             <ProjectRatioForm
               projects={settings.projects}
               usedProjectIds={usedProjectIds}
               onSaveProjects={handleSaveProjects}
             />
-          ) : (
-            <InlineMessage type="info">
-              This date is read-only. Ratio editing is disabled.
-            </InlineMessage>
-          )}
+          ) : null}
         </PanelStack>
       );
     }
@@ -478,14 +438,7 @@ export function CanvasPageClient({ initialDateKey }: CanvasPageClientProps) {
     if (tab === "paint") {
       return (
         <PanelStack>
-          <PanelHeading
-            title="Paint"
-            description="Click white cells to paint. Click colored cells to clear them."
-          />
-          <InlineMessage type="info">
-            Click white cells to paint. Click colored cells to clear them.
-            Black blocks cannot be painted.
-          </InlineMessage>
+          <PanelHeading title="Paint" description="" />
           {!hasProjects ? (
             <ActionCard
               title="Create your first project to start painting."
@@ -513,10 +466,6 @@ export function CanvasPageClient({ initialDateKey }: CanvasPageClientProps) {
               onClearSelectedCells={() => setSelectedCellIndices([])}
               onAddTask={handleAddTask}
             />
-          ) : !editable ? (
-            <InlineMessage type="info">
-              This date is read-only. Painting controls are disabled.
-            </InlineMessage>
           ) : null}
           <TaskList
             day={day}
@@ -541,11 +490,7 @@ export function CanvasPageClient({ initialDateKey }: CanvasPageClientProps) {
               <SleepForm onAddSleep={handleAddSleep} />
               <RandomEventForm onAddRandomEvent={handleAddRandomEvent} />
             </div>
-          ) : (
-            <InlineMessage type="info">
-              This date is read-only. Black block editing is disabled.
-            </InlineMessage>
-          )}
+          ) : null}
           <BlackBlockList
             sleepBlocks={day?.sleepBlocks ?? []}
             randomEventBlocks={day?.randomEventBlocks ?? []}
@@ -694,7 +639,7 @@ export function CanvasPageClient({ initialDateKey }: CanvasPageClientProps) {
           aria-label="Canvas controls"
         >
           <nav
-            className="hidden grid-cols-5 gap-2 border-b-2 border-[#1A1A1A] bg-[#FBFBF7] p-3 lg:grid"
+            className="hidden grid-cols-4 gap-2 border-b-2 border-[#1A1A1A] bg-[#FBFBF7] p-3 lg:grid"
             aria-label="Canvas control tabs"
           >
             {drawerTabs.map((tab) => (
@@ -726,7 +671,7 @@ export function CanvasPageClient({ initialDateKey }: CanvasPageClientProps) {
       </div>
 
       <nav
-        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t-2 border-[#1A1A1A] bg-white lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t-2 border-[#1A1A1A] bg-white lg:hidden"
         aria-label="Mobile canvas sections"
       >
         {mobileTabs.map((tab) => (
@@ -766,9 +711,6 @@ function ActionCard({
   return (
     <section className="animate-panel-enter rounded-lg border-2 border-[#1A1A1A] bg-white p-4 shadow-[4px_4px_0_#1A1A1A]">
       <h3 className="text-lg font-black">{title}</h3>
-      <p className="mt-2 text-sm font-bold text-[#4a4a4a]">
-        {description}
-      </p>
       <button
         type="button"
         onClick={onAction}
@@ -813,11 +755,7 @@ function MobileBlackDetails({
             <SleepForm onAddSleep={onAddSleep} />
             <RandomEventForm onAddRandomEvent={onAddRandomEvent} />
           </>
-        ) : (
-          <InlineMessage type="info">
-            This date is read-only. Black block editing is disabled.
-          </InlineMessage>
-        )}
+        ) : null}
         <BlackBlockList
           sleepBlocks={day?.sleepBlocks ?? []}
           randomEventBlocks={day?.randomEventBlocks ?? []}
@@ -897,7 +835,6 @@ function PanelHeading({
       <h2 className={eyebrow ? "mt-1 text-2xl font-black" : "text-2xl font-black"}>
         {title}
       </h2>
-      <p className="mt-1 text-sm font-bold text-[#4a4a4a]">{description}</p>
     </div>
   );
 }
