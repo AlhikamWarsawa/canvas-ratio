@@ -299,7 +299,7 @@ export function CanvasPageClient({ initialDateKey }: CanvasPageClientProps) {
     const cell = getCellState(day.slots, cellIndex);
 
     if (cell.state === "black") {
-      setCellError("Black blocks cannot be painted.");
+      setCellError("");
       return;
     }
 
@@ -341,7 +341,7 @@ export function CanvasPageClient({ initialDateKey }: CanvasPageClientProps) {
     const cell = getCellState(day.slots, cellIndex);
 
     if (cell.state === "black") {
-      setCellError("Black blocks cannot be painted.");
+      setCellError("");
       return;
     }
 
@@ -362,9 +362,6 @@ export function CanvasPageClient({ initialDateKey }: CanvasPageClientProps) {
           <h2 className="text-2xl font-black">
             Future canvas is not available yet.
           </h2>
-          <p className="mt-3 text-sm font-bold text-[#4a4a4a]">
-            Choose today or a past date to view stored canvas records.
-          </p>
         </section>
       );
     }
@@ -1024,13 +1021,6 @@ function SelectedProjectQuotaStrip({
         </p>
       </div>
 
-      {differenceCells > 0 ? (
-        <InlineMessage type="warning" className="animate-attention-once mt-3">
-          Over recommendation by {differenceCells}{" "}
-          {differenceCells === 1 ? "cell" : "cells"}. You can still paint
-          freely.
-        </InlineMessage>
-      ) : null}
     </section>
   );
 }
