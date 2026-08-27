@@ -69,11 +69,6 @@ export function RandomEventForm({
       className="animate-panel-enter rounded-lg border-2 border-[#1A1A1A] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#1A1A1A]"
     >
       <h2 className="text-2xl font-black">Random Event</h2>
-      <p className="mt-2 text-sm font-bold">
-        Use this for sudden events or commitments that should become black
-        blocks.
-      </p>
-
       <label className="mt-4 block">
         <span className="text-sm font-black uppercase text-[#2F5FBF]">
           Title

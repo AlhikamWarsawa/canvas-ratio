@@ -85,9 +85,6 @@ export function PomodoroPanel({
           <h2 className={compact ? "text-xl font-black" : "text-2xl font-black"}>
             Automatic Pomodoro
           </h2>
-          <p className="mt-1 text-sm font-bold">
-            Clock-based 25/5 sessions from 00:00. No start or stop.
-          </p>
         </div>
         <button
           type="button"
@@ -177,7 +174,7 @@ export function PomodoroPanel({
         </div>
 
         <div className="border-2 border-[#1A1A1A] bg-[#FBFBF7] p-4">
-          <h3 className="text-lg font-black">Urutan Sesi Hari Ini</h3>
+          <h3 className="text-lg font-black">Today’s Session Order</h3>
           <div
             className={`mt-3 grid max-h-72 gap-2 overflow-y-auto pr-1 ${
               compact ? "grid-cols-3 sm:grid-cols-4" : "grid-cols-4 sm:grid-cols-6 md:grid-cols-8"

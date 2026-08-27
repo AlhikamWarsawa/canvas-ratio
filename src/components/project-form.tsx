@@ -138,9 +138,6 @@ export function ProjectRatioForm({
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="text-2xl font-black">Projects</h2>
-          <p className="mt-1 text-sm font-bold">
-            Ratios are recommendations, not limits.
-          </p>
         </div>
         <span
           className={`border-2 border-[#1A1A1A] px-3 py-1 text-sm font-black ${
@@ -169,20 +166,6 @@ export function ProjectRatioForm({
           Save Projects
         </button>
       </div>
-
-      {activeDraftProjects.length === 0 ? (
-        <InlineMessage type="warning" className="mt-3">
-          Create your first project to start painting.
-        </InlineMessage>
-      ) : null}
-
-      {totalRatio !== 100 || !ratiosAreWholeNumbers ? (
-        <InlineMessage type="warning" className="mt-3">
-          Ratios should total 100% for clean recommendations. Current active
-          total: {Number.isFinite(totalRatio) ? totalRatio : 0}/100.
-          Recommendations are normalized.
-        </InlineMessage>
-      ) : null}
 
       <div className="mt-4 grid gap-3">
         {draftProjects.map((project, index) => {

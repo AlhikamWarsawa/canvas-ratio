@@ -183,9 +183,6 @@ export function TaskForm({
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="text-2xl font-black">Paint Your Day</h2>
-          <p className="mt-1 text-sm font-bold">
-            Click white cells to paint. Click colored cells to clear them.
-          </p>
         </div>
         <span
           className="h-8 w-8 rounded-full border-2 border-[#1A1A1A]"
@@ -235,13 +232,6 @@ export function TaskForm({
           />
         </label>
       </div>
-
-      {inputMode === "manual-cell" ? (
-        <p className="mt-4 border-2 border-[#1A1A1A] bg-[#FBFBF7] px-4 py-3 text-sm font-black">
-          Selected cells: {selectedCellIndices.length}. Ratios are
-          recommendations, not limits.
-        </p>
-      ) : null}
 
       <label className="mt-4 block">
         <span className="text-sm font-black uppercase text-[#2F5FBF]">

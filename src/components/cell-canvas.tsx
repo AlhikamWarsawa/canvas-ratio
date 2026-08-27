@@ -41,10 +41,6 @@ export function CellCanvas({
           <h2 className={compact ? "text-xl font-black" : "text-2xl font-black"}>
             {modeTitles[mode]}
           </h2>
-          <p className="text-sm font-bold text-[#4a4a4a]">
-            Click white cells to paint. Click colored cells to clear them.
-            Black blocks cannot be painted.
-          </p>
         </div>
         <span className="border-2 border-[#1A1A1A] bg-[#FFD91A] px-3 py-1 text-sm font-black">
           {mode === "am" ? "00:00-12:00" : "12:00-24:00"}

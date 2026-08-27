@@ -24,9 +24,6 @@ export function BlackBlockList({
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="text-2xl font-black">Black Blocks</h2>
-          <p className="mt-1 text-sm font-bold">
-            Sleep and random events become black time you cannot color.
-          </p>
         </div>
         <span
           className="h-8 w-8 rounded-full border-2 border-[#1A1A1A]"

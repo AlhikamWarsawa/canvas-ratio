@@ -54,9 +54,6 @@ export function DailyReviewButton({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <h3 className="text-xl font-black">Daily Review</h3>
-          <p className="mt-1 text-sm font-bold text-[#4a4a4a]">
-            Copy a local 48-block JSON prompt and paste it into any AI.
-          </p>
         </div>
         <button
           type="button"

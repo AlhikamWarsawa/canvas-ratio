@@ -27,9 +27,6 @@ export function ProjectList({
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="text-2xl font-black">Set your daily ratios</h2>
-          <p className="mt-1 text-sm font-bold">
-            Ratios are recommendations, not limits.
-          </p>
         </div>
         <span className="border-2 border-[#1A1A1A] bg-[#FFD91A] px-3 py-1 text-sm font-black">
           {activeProjects.length} active

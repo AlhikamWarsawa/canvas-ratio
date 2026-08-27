@@ -52,11 +52,6 @@ export function TaskList({
           <h2 className={compact ? "text-xl font-black" : "text-2xl font-black"}>
             Task List
           </h2>
-          <p className="mt-1 text-sm font-bold">
-            {compact
-              ? "Click colored canvas cells to clear them."
-              : "Tasks color project cells and stay assigned under black time."}
-          </p>
         </div>
         <span className="border-2 border-[#1A1A1A] bg-[#FFD91A] px-3 py-1 text-sm font-black">
           {tasks.length} task{tasks.length === 1 ? "" : "s"}

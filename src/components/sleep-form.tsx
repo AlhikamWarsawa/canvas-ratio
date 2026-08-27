@@ -55,10 +55,6 @@ export function SleepForm({ disabled = false, onAddSleep }: SleepFormProps) {
       className="animate-panel-enter rounded-lg border-2 border-[#1A1A1A] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#1A1A1A]"
     >
       <h2 className="text-2xl font-black">Sleep</h2>
-      <p className="mt-2 text-sm font-bold">
-        Sleep becomes black time because it cannot be colored with tasks.
-      </p>
-
       <div className="mt-4">
         <TimeRangeInput
           startValue={startValue}

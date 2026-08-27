@@ -478,7 +478,6 @@ export function CanvasPageClient({ initialDateKey }: CanvasPageClientProps) {
       return (
         <PanelStack>
           <PanelHeading
-            eyebrow="Time you cannot color"
             title="Black Blocks"
             description="Sleep and unexpected events turn cells black without deleting tasks."
           />
@@ -786,9 +785,6 @@ function BackupSettingsDetails({
         {editable ? (
           <section className="rounded-lg border-2 border-[#1A1A1A] bg-white p-5 shadow-[4px_4px_0_#1A1A1A]">
             <h2 className="text-xl font-black">Reset Today</h2>
-            <p className="mt-2 text-sm font-bold text-[#4a4a4a]">
-              Clear today back to a 1440-minute Free canvas.
-            </p>
             <button
               type="button"
               onClick={onResetToday}
