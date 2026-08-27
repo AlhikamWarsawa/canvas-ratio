@@ -32,6 +32,7 @@ body {
 button,
 a {
   -webkit-tap-highlight-color: transparent;
+  transition: all 0.5s ease-in-out !important;
 }
 
 .animate-cell-pop {
