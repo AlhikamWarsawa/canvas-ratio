@@ -32,7 +32,15 @@ body {
 button,
 a {
   -webkit-tap-highlight-color: transparent;
-  transition: all 0.5s ease-in-out !important;
+}
+
+.page-flip {
+  min-height: 100vh;
+  transform-origin: left center;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  animation: page-flip-in 0.5s ease-in-out both;
+  perspective: 1400px;
 }
 
 .animate-cell-pop {
@@ -242,6 +250,17 @@ a {
   100% {
     opacity: 1;
     filter: saturate(1);
+  }
+}
+
+@keyframes page-flip-in {
+  0% {
+    opacity: 0;
+    transform: perspective(1400px) rotateY(-88deg);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(1400px) rotateY(0deg);
   }
 }
 
