@@ -606,21 +606,9 @@ export function CanvasPageClient({ initialDateKey }: CanvasPageClientProps) {
             <div className="flex flex-wrap items-center gap-2 sm:gap-3">
               <Link
                 href="/"
-                className="border-2 border-[#1A1A1A] bg-white px-3 py-2 text-sm font-black text-[#2F5FBF] shadow-[3px_3px_0_#FFD91A] underline-offset-4 hover:underline focus:outline-none focus:ring-4 focus:ring-[#6FB6FF]"
+                className="border-2 border-[#1A1A1A] bg-[#1A1A1A] px-3 py-2 text-sm font-black text-white shadow-[3px_3px_0_#FFD91A] underline-offset-4 hover:underline focus:outline-none focus:ring-4 focus:ring-[#6FB6FF]"
               >
                 Home
-              </Link>
-              <Link
-                href="/project-files"
-                className="border-2 border-[#1A1A1A] bg-[#6FB6FF] px-3 py-2 text-sm font-black shadow-[3px_3px_0_#1A1A1A] underline-offset-4 hover:underline focus:outline-none focus:ring-4 focus:ring-[#6FB6FF]"
-              >
-                Project Files
-              </Link>
-              <Link
-                href="/study-lab"
-                className="border-2 border-[#1A1A1A] bg-[#8BCF3F] px-3 py-2 text-sm font-black shadow-[3px_3px_0_#1A1A1A] underline-offset-4 hover:underline focus:outline-none focus:ring-4 focus:ring-[#6FB6FF]"
-              >
-                Study Lab
               </Link>
               <h1 className="text-2xl font-black leading-tight sm:text-3xl">
                 Today’s Canvas
