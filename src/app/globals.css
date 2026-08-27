@@ -44,6 +44,21 @@ a {
   filter: drop-shadow(10px 0 12px rgba(24, 24, 24, 0.14));
   animation: page-flip-in 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
   perspective: 1400px;
+  will-change: transform, opacity, filter;
+}
+
+.page-flip::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -18px;
+  width: 36px;
+  background: linear-gradient(90deg, transparent, rgba(24, 24, 24, 0.32), transparent);
+  content: "";
+  pointer-events: none;
+  opacity: 0;
+  transform: translateZ(-2px) skewY(-2deg);
+  animation: page-flip-shadow 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
 .page-flip::after {
@@ -56,7 +71,7 @@ a {
   content: "";
   pointer-events: none;
   opacity: 0.8;
-  transform: translateZ(2px);
+  transform: translateZ(2px) skewY(1deg);
 }
 
 .animate-cell-pop {
@@ -272,11 +287,37 @@ a {
 @keyframes page-flip-in {
   0% {
     opacity: 0;
-    transform: perspective(1400px) rotateY(-88deg);
+    transform: perspective(1800px) rotateY(-88deg) skewX(-3deg) scaleX(0.98);
+  }
+  22% {
+    opacity: 0.7;
+    transform: perspective(1800px) rotateY(-70deg) skewX(-2.2deg) scaleX(0.985);
+  }
+  50% {
+    opacity: 0.94;
+    transform: perspective(1800px) rotateY(-42deg) skewX(-1.1deg) scaleX(0.995);
+  }
+  78% {
+    opacity: 1;
+    transform: perspective(1800px) rotateY(-12deg) skewX(-0.35deg) scaleX(1);
   }
   100% {
     opacity: 1;
-    transform: perspective(1400px) rotateY(0deg);
+    transform: perspective(1800px) rotateY(0deg) skewX(0deg) scaleX(1);
+  }
+}
+
+@keyframes page-flip-shadow {
+  0%,
+  18%,
+  100% {
+    opacity: 0;
+  }
+  42% {
+    opacity: 0.38;
+  }
+  58% {
+    opacity: 0.58;
   }
 }
 
