@@ -144,9 +144,6 @@ export function ProjectFilesPageClient({
       <header className="sticky top-0 z-30 border-b-2 border-[#1A1A1A] bg-[#FBFBF7]/95 shadow-[0_4px_0_rgba(26,26,26,0.18)] backdrop-blur">
         <div className="mx-auto flex max-w-[1500px] flex-col gap-3 px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
           <div className="min-w-0">
-            <p className="text-xs font-black uppercase text-[#2F5FBF]">
-              Canvas Ratio
-            </p>
             <h1 className="mt-1 text-3xl font-black leading-tight">
               Project Files
             </h1>

@@ -15,7 +15,7 @@ export default function LandingPage() {
           <Link href="/canvas" className="border-2 border-[#1A1A1A] bg-[#EF4444] px-6 py-3 font-black shadow-[4px_4px_0_#1A1A1A] transition hover:bg-[#DC2626]">Open Canvas</Link>
           <Link href="/study-lab" className="border-2 border-[#1A1A1A] bg-[#8BCF3F] px-6 py-3 font-black shadow-[4px_4px_0_#1A1A1A] transition hover:bg-[#FFD91A]">Study Lab</Link>
           <Link href="/project-files" className="border-2 border-[#1A1A1A] bg-[#6FB6FF] px-6 py-3 font-black shadow-[4px_4px_0_#1A1A1A] transition hover:bg-[#4A9FE8]">Project Files</Link>
-          <button type="button" disabled className="cursor-not-allowed border-2 border-[#1A1A1A] bg-[#FFD91A] px-6 py-3 font-black opacity-70 shadow-[4px_4px_0_#1A1A1A]">Weekly Review</button>
+          <Link href="/weekly-review" className="border-2 border-[#1A1A1A] bg-[#FFD91A] px-6 py-3 font-black shadow-[4px_4px_0_#1A1A1A] transition hover:bg-[#F4C400]">Weekly Review</Link>
         </nav>
       </section>
     </main>
