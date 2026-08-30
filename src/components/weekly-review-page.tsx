@@ -64,7 +64,7 @@ export function WeeklyReviewPage() {
       const key = dateKey(cursor); const saved = localStorage.getItem(`${KEY}:${key}`);
       weeks[key] = saved ? JSON.parse(saved) : EMPTY_STORIES;
     }
-    await navigator.clipboard.writeText(JSON.stringify(weeks, null, 2)); setNotice("Review range copied.");
+    await navigator.clipboard.writeText(`${JSON.stringify(weeks, null, 2)}\n\nSummarize this JSON into exactly 1 professional LinkedIn/CV bullet point. Make it achievement-oriented, concise, and start with an action verb.`); setNotice("Review range copied.");
   }
   async function copyRange() {
     const start = mondayOf(new Date(`${rangeStart}T00:00:00`));
