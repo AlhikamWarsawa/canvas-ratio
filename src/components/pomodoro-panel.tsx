@@ -21,7 +21,7 @@ type PomodoroPanelProps = {
   compact?: boolean;
 };
 
-const POMODORO_NOTIFICATION_SOUND_SRC = "/sound/bell.mp3";
+const POMODORO_NOTIFICATION_SOUND_SRC = "/assets/audio/bell.mp3";
 const POMODORO_NOTIFICATION_VOLUME = 1;
 
 export function PomodoroPanel({
