@@ -11,7 +11,7 @@ type CountdownParts = {
 
 const TARGET_DATE = {
   year: 2026,
-  month: 8, // September; JavaScript months are zero-based.
+  month: 8,
   day: 6,
   hour: 12,
   minute: 0,
@@ -59,7 +59,7 @@ export function Countdown() {
       <span className="group-hover:hidden">
         {remaining ? (
           <>
-            {remaining.days} D:{pad(remaining.hours)} H:{pad(remaining.minutes)} M:{pad(remaining.seconds)} S
+            {remaining.days}D:{pad(remaining.hours)}H:{pad(remaining.minutes)}M:{pad(remaining.seconds)}S
           </>
         ) : (
           "Memuat countdown..."
