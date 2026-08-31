@@ -59,7 +59,7 @@ export function Countdown() {
       <span className="group-hover:hidden">
         {remaining ? (
           <>
-            {remaining.days} Hari:{pad(remaining.hours)} Jam:{pad(remaining.minutes)} Menit:{pad(remaining.seconds)} Detik
+            {remaining.days} D:{pad(remaining.hours)} H:{pad(remaining.minutes)} M:{pad(remaining.seconds)} S
           </>
         ) : (
           "Memuat countdown..."
