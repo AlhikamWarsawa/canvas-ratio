@@ -180,7 +180,7 @@ The Docker setup runs the standalone Next.js production server with `node server
 
 - The UI remains local-first and keeps its source data in localStorage; MCP exposes a synced snapshot for reading.
 - There is no login or multi-user account system.
-- The MCP snapshot needs persistent server storage; the included Docker Compose volume provides that for a single-user deployment.
+- The MCP snapshot needs persistent server storage. Docker uses the `docker-data` volume; Heroku should attach Heroku Postgres so `DATABASE_URL` is available.
 - Clearing browser data can delete records.
 - Export/import backup is recommended before clearing browser data or changing browsers.
 - There are no analytics, social sharing, billing, teams, calendar integration, dashboard charts, or push notifications.
@@ -203,4 +203,4 @@ Canvas Ratio includes a remote MCP endpoint for six app areas: Canvas, Deadline 
 
 To enable the endpoint, set a long random `MCP_API_KEY` (see `.env.example`) and run the app behind public HTTPS. Add `https://your-domain.example/api/mcp` as a custom MCP server/connection in ChatGPT and use the same key as a Bearer token. The endpoint is read-only and exposes one tool per page.
 
-For Docker, keep the `docker-data` volume mounted so the snapshot survives container restarts. Do not expose the MCP endpoint without setting `MCP_API_KEY`. OpenAI's remote MCP tool supports custom remote MCP servers and OAuth authorization; this implementation uses a private Bearer token for a single-user setup.
+For Docker, keep the `docker-data` volume mounted so the snapshot survives container restarts. On Heroku, attach a Postgres add-on; the app automatically creates its snapshot table and prefers `DATABASE_URL`. Do not expose the MCP endpoint without setting `MCP_API_KEY`. OpenAI's remote MCP tool supports custom remote MCP servers and OAuth authorization; this implementation uses a private Bearer token for a single-user setup.

@@ -1,8 +1,11 @@
-import { collectSnapshotByPrefix, loadMcpSnapshot, parseSnapshotValue } from "@/lib/mcp-snapshot";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
+import { isMcpBearerValid } from "@/lib/mcp-auth";
+import { collectSnapshotByPrefix, loadMcpSnapshot, parseSnapshotValue, type LocalStorageSnapshot } from "@/lib/mcp-snapshot";
 
 export const runtime = "nodejs";
 
-const tools = [
+const toolDefinitions = [
   { name: "read_canvas", description: "Read Canvas day records and Canvas projects.", key: "canvas" },
   { name: "read_deadline_zone", description: "Read Deadline Zone tasks, deadlines, projects, and manual progress.", key: "deadline" },
   { name: "read_study_lab", description: "Read Study Lab decks, flashcards, and review settings.", key: "study" },
@@ -11,55 +14,47 @@ const tools = [
   { name: "read_monthly_review", description: "Read saved Monthly Review entries.", key: "monthly" },
 ] as const;
 
-function authorized(request: Request): boolean {
-  const expected = process.env.MCP_API_KEY;
-  if (!expected) return false;
-  return request.headers.get("authorization") === `Bearer ${expected}`;
+function pageData(snapshot: LocalStorageSnapshot, key: (typeof toolDefinitions)[number]["key"]): unknown {
+  if (key === "canvas") return { settings: parseSnapshotValue(snapshot, "canvas-ratio:settings"), days: collectSnapshotByPrefix(snapshot, "canvas-ratio:v1:") };
+  if (key === "deadline") return parseSnapshotValue(snapshot, "canvas-ratio:deadline-zone:v1");
+  if (key === "study") return parseSnapshotValue(snapshot, "recall-lab:flashcards:v1");
+  if (key === "project-files") return parseSnapshotValue(snapshot, "canvas-ratio:project-files:v1");
+  if (key === "weekly") return collectSnapshotByPrefix(snapshot, "canvas-ratio:weekly-review:v1:");
+  return collectSnapshotByPrefix(snapshot, "canvas-ratio:monthly-review:v1:");
 }
 
-function jsonRpcError(id: unknown, code: number, message: string) {
-  return Response.json({ jsonrpc: "2.0", id, error: { code, message } });
+function createServer(snapshot: LocalStorageSnapshot): McpServer {
+  const server = new McpServer({ name: "canvas-ratio", version: "1.0.0" }, { instructions: "Canvas Ratio read-only data access for six app areas." });
+  for (const tool of toolDefinitions) {
+    server.registerTool(tool.name, { description: tool.description, annotations: { readOnlyHint: true } }, async () => ({
+      content: [{ type: "text", text: JSON.stringify({ page: tool.key, data: pageData(snapshot, tool.key) }) }],
+    }));
+  }
+  return server;
 }
 
-export async function OPTIONS() {
-  return new Response(null, { status: 204, headers: { Allow: "POST, OPTIONS" } });
+export async function OPTIONS() { return new Response(null, { status: 204, headers: { Allow: "GET, POST, DELETE, OPTIONS" } }); }
+
+export async function GET(request: Request) {
+  if (!isMcpBearerValid(request)) return new Response("Unauthorized", { status: 401 });
+  const transport = new WebStandardStreamableHTTPServerTransport({ enableJsonResponse: false });
+  const server = createServer(await loadMcpSnapshot());
+  await server.connect(transport);
+  return transport.handleRequest(request);
 }
 
 export async function POST(request: Request) {
-  if (!authorized(request)) return new Response("Unauthorized", { status: 401 });
+  if (!isMcpBearerValid(request)) return new Response("Unauthorized", { status: 401, headers: { "www-authenticate": 'Bearer realm="canvas-ratio-mcp"' } });
+  const transport = new WebStandardStreamableHTTPServerTransport({ enableJsonResponse: true });
+  const server = createServer(await loadMcpSnapshot());
+  await server.connect(transport);
+  return transport.handleRequest(request);
+}
 
-  let body: { id?: unknown; method?: string; params?: Record<string, unknown> };
-  try {
-    body = (await request.json()) as typeof body;
-  } catch {
-    return jsonRpcError(null, -32700, "Invalid JSON");
-  }
-
-  const id = body.id ?? null;
-  if (body.method === "initialize") {
-    return Response.json({ jsonrpc: "2.0", id, result: { protocolVersion: "2025-03-26", capabilities: { tools: {} }, serverInfo: { name: "canvas-ratio", version: "1.0.0" } } });
-  }
-  if (body.method === "notifications/initialized") return new Response(null, { status: 202 });
-  if (body.method === "ping") return Response.json({ jsonrpc: "2.0", id, result: {} });
-  if (body.method === "tools/list") {
-    return Response.json({ jsonrpc: "2.0", id, result: { tools: tools.map((tool) => ({ name: tool.name, description: tool.description, inputSchema: { type: "object", properties: {}, additionalProperties: false }, annotations: { readOnlyHint: true } })) } });
-  }
-  if (body.method !== "tools/call") return jsonRpcError(id, -32601, `Unsupported method: ${body.method ?? "unknown"}`);
-
-  const name = body.params?.name;
-  const tool = tools.find((candidate) => candidate.name === name);
-  if (!tool) return jsonRpcError(id, -32602, "Unknown tool");
-  const snapshot = await loadMcpSnapshot();
-  const data = tool.key === "canvas"
-    ? { settings: parseSnapshotValue(snapshot, "canvas-ratio:settings"), days: collectSnapshotByPrefix(snapshot, "canvas-ratio:v1:") }
-    : tool.key === "deadline"
-      ? parseSnapshotValue(snapshot, "canvas-ratio:deadline-zone:v1")
-      : tool.key === "study"
-        ? parseSnapshotValue(snapshot, "recall-lab:flashcards:v1")
-        : tool.key === "project-files"
-          ? parseSnapshotValue(snapshot, "canvas-ratio:project-files:v1")
-          : tool.key === "weekly"
-            ? collectSnapshotByPrefix(snapshot, "canvas-ratio:weekly-review:v1:")
-            : collectSnapshotByPrefix(snapshot, "canvas-ratio:monthly-review:v1:");
-  return Response.json({ jsonrpc: "2.0", id, result: { content: [{ type: "text", text: JSON.stringify({ page: tool.key, data }) }], structuredContent: { page: tool.key, data } } });
+export async function DELETE(request: Request) {
+  if (!isMcpBearerValid(request)) return new Response("Unauthorized", { status: 401 });
+  const transport = new WebStandardStreamableHTTPServerTransport({ enableJsonResponse: true });
+  const server = createServer(await loadMcpSnapshot());
+  await server.connect(transport);
+  return transport.handleRequest(request);
 }
