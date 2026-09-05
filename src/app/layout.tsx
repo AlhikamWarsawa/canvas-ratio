@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { PageTurnSound } from "@/components/page-turn-sound";
+import { McpLocalStorageSync } from "@/components/mcp-local-storage-sync";
 
 export const metadata: Metadata = {
   title: "Canvas Ratio",
@@ -14,7 +15,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="font-sans antialiased"><PageTurnSound />{children}</body>
+      <body className="font-sans antialiased"><PageTurnSound /><McpLocalStorageSync />{children}</body>
     </html>
   );
 }

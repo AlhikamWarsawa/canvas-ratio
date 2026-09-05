@@ -9,4 +9,7 @@ services:
     environment:
       NODE_ENV: production
       NEXT_TELEMETRY_DISABLED: "1"
+      MCP_API_KEY: ${MCP_API_KEY}
+    volumes:
+      - ./docker-data:/app/docker-data
     restart: unless-stopped
