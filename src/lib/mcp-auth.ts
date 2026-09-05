@@ -2,6 +2,7 @@ import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 
 type OAuthCodePayload = { type: "code"; clientId: string; redirectUri: string; challenge: string; exp: number };
 type AccessTokenPayload = { type: "access"; exp: number };
+type RegisteredClientPayload = { type: "client"; clientName?: string; redirectUris: string[]; exp: number };
 
 function secret(): string {
   const value = process.env.MCP_API_KEY;
@@ -17,7 +18,7 @@ function sign(data: string): string {
   return createHmac("sha256", secret()).update(data).digest("base64url");
 }
 
-function issue(payload: OAuthCodePayload | AccessTokenPayload): string {
+function issue(payload: OAuthCodePayload | AccessTokenPayload | RegisteredClientPayload): string {
   const body = encode(payload);
   return `${body}.${sign(body)}`;
 }
@@ -50,9 +51,18 @@ export function createAuthorizationCode(payload: Omit<OAuthCodePayload, "type">)
   return issue({ type: "code", ...payload });
 }
 
-export function redeemAuthorizationCode(code: string, verifier: string): AccessTokenPayload | null {
+export function registerOAuthClient(clientName: string | undefined, redirectUris: string[]): string {
+  return issue({ type: "client", clientName, redirectUris, exp: Date.now() + 365 * 24 * 60 * 60 * 1_000 });
+}
+
+export function getRegisteredClient(clientId: string): RegisteredClientPayload | null {
+  return read<RegisteredClientPayload>(clientId, "client");
+}
+
+export function redeemAuthorizationCode(code: string, verifier: string, clientId: string, redirectUri: string): AccessTokenPayload | null {
   const payload = read<OAuthCodePayload>(code, "code");
   if (!payload) return null;
+  if (payload.clientId !== clientId || payload.redirectUri !== redirectUri) return null;
   const challenge = createHash("sha256").update(verifier).digest("base64url");
   if (challenge !== payload.challenge) return null;
   return { type: "access", exp: Date.now() + 3_600_000 };

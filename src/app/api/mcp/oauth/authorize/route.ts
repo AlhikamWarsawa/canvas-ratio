@@ -1,4 +1,4 @@
-import { createAuthorizationCode, verifyMcpLogin } from "@/lib/mcp-auth";
+import { createAuthorizationCode, getRegisteredClient, verifyMcpLogin } from "@/lib/mcp-auth";
 
 export const runtime = "nodejs";
 
@@ -13,7 +13,8 @@ function escapeHtml(value: string): string {
 }
 
 function validRequest(params: URLSearchParams): boolean {
-  return params.get("response_type") === "code" && !!params.get("client_id") && !!params.get("redirect_uri") && params.get("code_challenge_method") === "S256" && !!params.get("code_challenge");
+  const client = params.get("client_id") ? getRegisteredClient(params.get("client_id")!) : null;
+  return params.get("response_type") === "code" && !!client && !!params.get("redirect_uri") && client.redirectUris.includes(params.get("redirect_uri")!) && params.get("code_challenge_method") === "S256" && !!params.get("code_challenge");
 }
 
 export async function GET(request: Request) {
