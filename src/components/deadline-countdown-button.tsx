@@ -8,7 +8,7 @@ function formatCountdown(difference: number): string {
   const hours = Math.floor((totalSeconds % 86_400) / 3_600);
   const minutes = Math.floor((totalSeconds % 3_600) / 60);
   const seconds = totalSeconds % 60;
-  return `${days}h ${String(hours).padStart(2, "0")}j ${String(minutes).padStart(2, "0")}m ${String(seconds).padStart(2, "0")}d`;
+  return `${days}D ${String(hours).padStart(2, "0")}H ${String(minutes).padStart(2, "0")}M ${String(seconds).padStart(2, "0")}S`;
 }
 
 export function DeadlineCountdownButton() {
