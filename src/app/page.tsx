@@ -19,7 +19,7 @@ export default function LandingPage() {
           <Link href="/weekly-review" className="border-2 border-[#1A1A1A] bg-[#FFD91A] px-6 py-3 font-black shadow-[4px_4px_0_#1A1A1A] transition hover:bg-[#F4C400]">Weekly Review</Link>
           <Link href="/monthly-review" className="border-2 border-[#1A1A1A] bg-[#22D3EE] px-6 py-3 font-black shadow-[4px_4px_0_#1A1A1A] transition hover:bg-[#06B6D4]">Monthly Review</Link>
           <Link href="/deadline-zone" className="border-2 border-[#1A1A1A] bg-[#D946EF] px-6 py-3 font-black text-white shadow-[4px_4px_0_#1A1A1A] transition hover:bg-[#B832C5]">Deadline Zone</Link>
-          <DeadlineCountdownButton />
+          {/*<DeadlineCountdownButton />*/}
         </nav>
       </section>
     </main>
